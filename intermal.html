@@ -77,13 +77,13 @@ h1{font-size:18px;font-weight:700;margin:2px 0;opacity:.9;}
 /* TABLES */
 .tbl-wrap{overflow-x:auto;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-th{background:#003BC2;color:#fff;font-weight:700;padding:8px 9px;text-align:right;border:1px solid #0030a0;white-space:nowrap;}
+th{background:var(--brand);color:#fff;font-weight:700;padding:8px 9px;text-align:right;border:1px solid var(--brand-dark);white-space:nowrap;}
 th:first-child{text-align:center;}
 td{padding:7px 9px;text-align:right;border:1px solid var(--line);white-space:nowrap;}
 td:first-child{text-align:center;font-weight:bold;background:#fafafa;}
 tr:nth-child(even) td{background:#fbfbfc;}
 tr:nth-child(even) td:first-child{background:#f3f3f5;}
-tr.tot td{background:#003BC2!important;color:#fff;font-weight:800;border-color:#0030a0;}
+tr.tot td{background:var(--brand)!important;color:#fff;font-weight:800;border-color:var(--brand-dark)!important;}
 .up{color:#1a8f3c;font-weight:bold;}
 .down{color:var(--err);font-weight:bold;}
 .flat{color:var(--mut);}
@@ -540,10 +540,7 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
       <div class="chartbox sm"><canvas id="c5b"></canvas></div>
     </div>
     <div class="tbl-wrap"><div id="t5"></div></div>
-    <div class="subhd">4.2 · Cross-check คะแนน</div>
-    <div class="tbl-wrap"><div id="t5x"></div></div>
-    <div class="note" id="n5x"></div>
-    <div class="subhd">4.3 · ของรางวัลที่ถูกแลก แยกตามเดือน</div>
+    <div class="subhd">4.2 · ของรางวัลยอดนิยม <span id="pivotModeLabel" style="font-size:11px;font-weight:400;color:var(--mut);"></span></div>
     <div class="tbl-wrap"><div id="t5r"></div></div>
   </div>
 </div>
@@ -568,7 +565,7 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
 <footer>
 <b>วิธีคำนวณ:</b> %Ch = (เดือนนี้ − เดือนก่อนหน้า) ÷ เดือนก่อนหน้า &nbsp;|&nbsp; New User: Status=ACTIVE &nbsp;|&nbsp; Sales/Points: Point type=GIVEN<br>
 ไฟล์ต้นทาง: contacts · Point Report List · Redemptions Details — export จาก Rocket Loyalty CRM<br>
-Loyalty Dashboard Pro · Prototype v1
+<div style="margin-top:10px;padding-top:10px;border-top:1px solid #2a2a3a;color:#888;">© <span id="footerYear"></span> Rocket Innovation Dashboard &nbsp;·&nbsp; จัดทำขึ้นเพื่อเป็นข้อมูล Internal และเพื่อวิเคราะห์ข้อมูลเท่านั้น</div>
 </footer>
 
 <script>
@@ -609,6 +606,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   loadStoredData();
   loadApiUrl();
   updateDbSummary();
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
 });
 
 // ════════════════════════════════════════════════════════════════
@@ -1194,6 +1192,7 @@ function renderP4(){
     stat(fmt(b.grand),'คะแนน 3.2 (ทุกแหล่ง)','#333')+
     stat(fmt(wpTotal),'Welcome Point','#C8102E')+
     stat(b.grand>0?(wpTotal/b.grand*100).toFixed(0)+'%':'–','% Welcome/รวม','#888');
+  // ตาราง 3.1 เรียงจากเก่าไปใหม่ (ascending)
   let r4a=`<table><tr><th>เดือน</th>${chTh(aKeys)}<th>รวม</th><th>%Ch</th></tr>`;
   a.months.forEach((m,i)=>{r4a+=`<tr><td>${ML[m]||m}</td>${aKeys.map(k=>'<td>'+fmt(a.data[k][i])+'</td>').join('')}<td><b>${fmt(a.total[i])}</b></td>${pchCell(a.pch[i])}</tr>`;});
   r4a+=`<tr class="tot"><td>รวม</td>${aKeys.map(k=>'<td>'+fmt(a.totals[k])+'</td>').join('')}<td>${fmt(a.grand)}</td><td>–</td></tr></table>`;
@@ -1203,6 +1202,30 @@ function renderP4(){
   r4b+=`<tr class="tot"><td>รวม</td>${bKeys.map(k=>'<td>'+fmt(b.totals[k])+'</td>').join('')}<td>${fmt(b.grand)}</td><td>–</td></tr></table>`;
   document.getElementById('t4b').innerHTML=r4b;
   document.getElementById('n4').innerHTML=`<b>Welcome Point รวม ${fmt(wpTotal)} แต้ม</b> (${b.grand>0?(wpTotal/b.grand*100).toFixed(0):0}% ของทั้งหมด) — ตาราง 3.1 ไม่นับรวม Welcome Point`;
+}
+
+function buildRewardPivot(s){
+  const THRESHOLD=15;
+  const months=s.months; // ascending
+  if(months.length<=THRESHOLD){
+    // Monthly columns
+    const rdMap={};
+    months.forEach(m=>{(s.rewards[m]||[]).forEach(([n,q])=>{if(!rdMap[n])rdMap[n]={};rdMap[n][m]=(rdMap[n][m]||0)+q;});});
+    const countByCol={};months.forEach((m,i)=>{countByCol[m]=s.count[i];});
+    const rdList=Object.entries(rdMap).sort((a,b)=>Object.values(b[1]).reduce((x,y)=>x+y,0)-Object.values(a[1]).reduce((x,y)=>x+y,0));
+    return{cols:months,colLabels:months.map(m=>ML[m]||m),rdMap,rdList,countByCol,isQuarterly:false};
+  } else {
+    // Quarterly columns
+    const qKey=m=>{const[y,mo]=m.split('-');return y+'-Q'+Math.ceil(Number(mo)/3);};
+    const qLabel=k=>{const[y,q]=k.split('-Q');return'Q'+q+'/'+y;};
+    const cols=[...new Set(months.map(qKey))].sort();
+    const colLabels=cols.map(qLabel);
+    const rdMap={};
+    months.forEach(m=>{const q=qKey(m);(s.rewards[m]||[]).forEach(([n,v])=>{if(!rdMap[n])rdMap[n]={};rdMap[n][q]=(rdMap[n][q]||0)+v;});});
+    const countByCol={};months.forEach((m,i)=>{const q=qKey(m);countByCol[q]=(countByCol[q]||0)+s.count[i];});
+    const rdList=Object.entries(rdMap).sort((a,b)=>Object.values(b[1]).reduce((x,y)=>x+y,0)-Object.values(a[1]).reduce((x,y)=>x+y,0));
+    return{cols,colLabels,rdMap,rdList,countByCol,isQuarterly:true};
+  }
 }
 
 function renderP5(){
@@ -1231,41 +1254,27 @@ function renderP5(){
     stat(fmt(s.total_pts),'คะแนนที่ใช้แลก (Redemption)','#7B1E26')+
     stat(fmt(totalUsed),'Used Points (REDEEMED)','#C8102E')+
     stat(totalGive>0?(totalUsed/totalGive*100).toFixed(1)+'%':'–','Used/Give Rate','#3A4DA0');
-  const s5Idx=[...s.months.keys()].reverse();
+
+  // ตารางหลัก เรียงจากเก่าไปใหม่ (ascending)
   let r5=`<table><tr><th>เดือน</th>${thC('Give Points','#3A4DA0')}${thC('Used Points','#7B1E26')}<th>%Ch</th>${thC('จำนวนที่แลก','#1A1A1A')}<th>%Ch</th>${thC('Used/Give %','#004EE6')}</tr>`;
-  s5Idx.forEach(i=>{
-    const m=s.months[i],gv=s5GivePts[i]||0,us=s.pts_point[i]||0;
+  s.months.forEach((m,i)=>{
+    const gv=s5GivePts[i]||0,us=s.pts_point[i]||0;
     const prevUs=i>0?s.pts_point[i-1]:null;
     r5+=`<tr><td>${ML[m]||m}</td><td>${fmt(gv)}</td><td>${fmt(us)}</td>${pchCell(prevUs!==null&&prevUs!==0?(us-prevUs)/prevUs:null)}<td>${fmt(s.count[i])}</td>${pchCell(s.count_pch[i])}<td>${gv>0?(us/gv*100).toFixed(1)+'%':'–'}</td></tr>`;
   });
   r5+=`<tr class="tot"><td>รวม</td><td>${fmt(totalGive)}</td><td>${fmt(totalUsed)}</td><td>–</td><td>${fmt(s.total_count)}</td><td>–</td><td>${totalGive>0?(totalUsed/totalGive*100).toFixed(1)+'%':'–'}</td></tr></table>`;
   document.getElementById('t5').innerHTML=r5;
 
-  let r5x=`<table><tr><th>เดือน</th>${thC('คะแนน: Redemption file','#555')}${thC('คะแนน: Point Report','#555')}${thC('ผลต่าง','#555')}${thC('สถานะ','#555')}</tr>`;
-  let allOk=true;
-  s5Idx.forEach(i=>{
-    const m=s.months[i],diff=s.pts_point[i]-s.pts_detail[i],ok=diff===0;
-    if(!ok)allOk=false;
-    r5x+=`<tr><td>${ML[m]||m}</td><td>${fmt(s.pts_detail[i])}</td><td>${fmt(s.pts_point[i])}</td><td>${diff?diff.toLocaleString():'0'}</td>${ok?'<td style="color:#1a8f3c;font-weight:bold">✓ ตรงกัน</td>':'<td style="color:#C8102E;font-weight:bold">⚠ ต่างกัน '+diff.toLocaleString()+' pts</td>'}</tr>`;
-  });
-  r5x+=`</table>`;
-  document.getElementById('t5x').innerHTML=r5x;
-  const note=document.getElementById('n5x');
-  note.className='note'+(allOk?' ok':'');
-  note.innerHTML=allOk?'<b>ผลต่าง = 0 ทุกเดือน</b> → ข้อมูลคะแนนแลกตรงกัน 100%':'<b>หมายเหตุ:</b> ผลต่างอาจเกิดจาก manual deduction ที่บันทึกใน Point Report แต่ไม่ปรากฏใน Redemption Detail';
-
-  // Reward pivot
-  const allM=[...s.months].reverse();
-  const rdMap={};
-  s.months.forEach(m=>{(s.rewards[m]||[]).forEach(([n,q])=>{if(!rdMap[n])rdMap[n]={};rdMap[n][m]=(rdMap[n][m]||0)+q;});});
-  const rdList=Object.entries(rdMap).sort((a,b)=>Object.values(b[1]).reduce((x,y)=>x+y,0)-Object.values(a[1]).reduce((x,y)=>x+y,0));
-  const countByM={};s.months.forEach((m,i)=>{countByM[m]=s.count[i];});
-  let r5r=`<table class="tname"><tr><th style="text-align:left">ของรางวัล</th>${allM.map(m=>'<th>'+(ML[m]||m)+'</th>').join('')}<th>รวม</th></tr>`;
-  rdList.forEach(([n,data])=>{
+  // Pivot ของรางวัล: monthly ≤15 เดือน, quarterly >15 เดือน
+  const pv=buildRewardPivot(s);
+  const modeEl=document.getElementById('pivotModeLabel');
+  if(modeEl) modeEl.textContent=pv.isQuarterly?'(รายไตรมาส — ข้อมูลมากกว่า 15 เดือน)':'(รายเดือน)';
+  let r5r=`<table class="tname"><tr><th style="text-align:left">ของรางวัล</th>${pv.cols.map((c,i)=>'<th>'+pv.colLabels[i]+'</th>').join('')}<th>รวม</th></tr>`;
+  pv.rdList.forEach(([n,data])=>{
     const tot=Object.values(data).reduce((a,b)=>a+b,0);
-    r5r+=`<tr><td>${n}</td>${allM.map(m=>'<td>'+(data[m]||'–')+'</td>').join('')}<td><b>${tot}</b></td></tr>`;
+    r5r+=`<tr><td>${n}</td>${pv.cols.map(c=>'<td>'+(data[c]||'–')+'</td>').join('')}<td><b>${tot}</b></td></tr>`;
   });
-  r5r+=`<tr class="tot"><td style="text-align:left">รวม</td>${allM.map(m=>'<td>'+(countByM[m]||0)+'</td>').join('')}<td>${s.total_count}</td></tr></table>`;
+  r5r+=`<tr class="tot"><td style="text-align:left">รวม</td>${pv.cols.map(c=>'<td>'+(pv.countByCol[c]||0)+'</td>').join('')}<td>${s.total_count}</td></tr></table>`;
   document.getElementById('t5r').innerHTML=r5r;
 }
 
