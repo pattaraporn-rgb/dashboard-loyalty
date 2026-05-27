@@ -6,14 +6,18 @@
 <title>Loyalty Dashboard Pro</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 :root{
   --brand:#004EE6;--brand-dark:#002FA0;--brand-light:#E8EFFD;
   --ink:#1A1A1A;--bg:#f0f0f3;--card:#fff;--mut:#8a8a93;--line:#e6e6ea;
   --ok:#1a8f3c;--warn:#f39c12;--err:#C8102E;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Tahoma','Segoe UI',sans-serif;background:var(--bg);color:var(--ink);}
+body{font-family:'Sarabun','Tahoma','Segoe UI',sans-serif;background:var(--bg);color:var(--ink);}
 
 /* HEADER */
 header{background:linear-gradient(120deg,var(--brand-dark) 0%,var(--brand) 60%,#1A6FFF 100%);color:#fff;padding:22px 0 0;transition:background .4s;}
@@ -36,13 +40,13 @@ h1{font-size:18px;font-weight:700;margin:2px 0;opacity:.9;}
 
 /* TAB BAR */
 .tabs{background:#0A0A1A;display:flex;gap:0;overflow-x:auto;}
-.tabs button{flex:1;min-width:130px;background:none;border:none;color:#8a90b0;padding:13px 8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Tahoma','Segoe UI',sans-serif;border-bottom:3px solid transparent;transition:.18s;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;}
+.tabs button{flex:1;min-width:130px;background:none;border:none;color:#8a90b0;padding:13px 8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Sarabun','Tahoma','Segoe UI',sans-serif;border-bottom:3px solid transparent;transition:.18s;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;}
 .tabs button .tnum{background:#1E2240;color:#7a82aa;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
 .tabs button.active,.tabs button:hover{color:#fff;border-bottom-color:var(--brand);background:#14162e;}
 .tabs button.active .tnum{background:var(--brand);color:#fff;}
 /* HEADER ACTION BUTTONS */
 .hd-actions{margin-left:auto;display:flex;gap:8px;align-items:center;}
-.hd-btn{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:12px;color:#fff;cursor:pointer;padding:8px 16px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s;min-width:72px;font-family:'Tahoma','Segoe UI',sans-serif;}
+.hd-btn{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:12px;color:#fff;cursor:pointer;padding:8px 16px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s;min-width:72px;font-family:'Sarabun','Tahoma','Segoe UI',sans-serif;}
 .hd-btn:hover{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.6);}
 .hd-btn.active{background:rgba(255,255,255,.3);border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35);}
 .hd-btn-icon{font-size:20px;line-height:1;}
