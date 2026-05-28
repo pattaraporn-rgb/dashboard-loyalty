@@ -1507,16 +1507,17 @@ function renderP2(){
     data:{labels:lab,datasets:[{label:'สมาชิกใหม่ (ACTIVE)',data:s.active,backgroundColor:getBrandColor(),borderRadius:4}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmt(v)}}}}
   });
-  const max=Math.max(...s.active), imax=s.active.indexOf(max);
+  const chartTotal=s.active.reduce((a,b)=>a+b,0);
+  const max=s.active.length?Math.max(...s.active):0, imax=s.active.indexOf(max);
   document.getElementById('kpi1').innerHTML=
     stat(fmt(s.total_active),'สมาชิก ACTIVE รวม')+
-    stat(fmt(max),'เดือนสูงสุด: '+(ML[s.months[imax]]||s.months[imax]),'#1a8f3c')+
-    stat(fmt(Math.round(s.total_active/s.months.length)),'เฉลี่ยต่อเดือน','#555');
+    stat(fmt(max),'เดือนสูงสุด: '+(s.months.length&&imax>=0?(ML[s.months[imax]]||s.months[imax]):'–'),'#1a8f3c')+
+    stat(fmt(s.months.length?Math.round(chartTotal/s.months.length):0),'เฉลี่ยต่อเดือน','#555');
   let r=`<table><tr><th>เดือน</th><th>สมาชิกใหม่ (ACTIVE)</th><th>%Ch</th></tr>`;
   s.months.forEach((m,i)=>{r+=`<tr><td>${ML[m]||m}</td><td>${fmt(s.active[i])}</td>${pchCell(s.pch[i])}</tr>`;});
-  r+=`<tr class="tot"><td>รวม</td><td>${fmt(s.total_active)}</td><td>–</td></tr></table>`;
+  r+=`<tr class="tot"><td>รวม</td><td>${fmt(chartTotal)}</td><td>–</td></tr></table>`;
   document.getElementById('t1').innerHTML=r;
-  document.getElementById('n1').innerHTML=`สมาชิก ACTIVE <b>${fmt(s.total_active)} คน</b> — ไม่รวมเดือนปัจจุบันที่ข้อมูลยังไม่ครบ`;
+  document.getElementById('n1').innerHTML=`สมาชิกใหม่ (ACTIVE) <b>${fmt(chartTotal)} คน</b> — ไม่รวมเดือนปัจจุบันที่ข้อมูลยังไม่ครบ`;
 
   // Inactive members section
   const el=document.getElementById('inactiveSection');
