@@ -493,33 +493,15 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
   SpreadsheetApp.getUi().alert(<span class="c-str">"✅ สร้าง Sheets สำเร็จ!"</span>);
 }
 
-<span class="c-comment">// Dashboard ดึง + เขียนข้อมูลผ่าน URL นี้ (?action=read|insert|delete)</span>
+<span class="c-comment">// GET: read data only — insert/delete ย้ายไปที่ doPost แล้ว (ข้อมูลไม่รั่วใน URL)</span>
 <span class="c-key">function</span> doGet(e) {
-  <span class="c-key">const</span> action = (e.parameter && e.parameter.action) || <span class="c-str">"read"</span>;
   <span class="c-key">const</span> ss = SpreadsheetApp.getActiveSpreadsheet();
-  <span class="c-key">if</span> (action === <span class="c-str">"read"</span>) {
-    <span class="c-key">return</span> jsonOut({
-      contacts:    getData(ss, <span class="c-str">"contacts"</span>),
-      pointReport: getData(ss, <span class="c-str">"Point Report"</span>),
-      redemptions: getData(ss, <span class="c-str">"Redemptions"</span>),
-      exportedAt:  <span class="c-key">new</span> Date().toISOString()
-    });
-  }
-  <span class="c-key">if</span> (action === <span class="c-str">"insert"</span>) {
-    <span class="c-key">const</span> sh = ss.getSheetByName(e.parameter.sheet);
-    <span class="c-key">if</span> (!sh) <span class="c-key">return</span> jsonOut({success:<span class="c-key">false</span>, error:<span class="c-str">"Sheet not found"</span>});
-    <span class="c-key">const</span> data = JSON.parse(e.parameter.data || <span class="c-str">"{}"</span>);
-    <span class="c-key">const</span> headers = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
-    sh.appendRow(headers.map(h => data[h] !== undefined ? data[h] : <span class="c-str">""</span>));
-    <span class="c-key">return</span> jsonOut({success:<span class="c-key">true</span>, insertedAt:<span class="c-key">new</span> Date().toISOString()});
-  }
-  <span class="c-key">if</span> (action === <span class="c-str">"delete"</span>) {
-    <span class="c-key">const</span> sh = ss.getSheetByName(e.parameter.sheet);
-    <span class="c-key">if</span> (!sh) <span class="c-key">return</span> jsonOut({success:<span class="c-key">false</span>, error:<span class="c-str">"Sheet not found"</span>});
-    sh.deleteRow(parseInt(e.parameter.rowId) + 2); <span class="c-comment">// +1 header, +1 for 1-index</span>
-    <span class="c-key">return</span> jsonOut({success:<span class="c-key">true</span>});
-  }
-  <span class="c-key">return</span> jsonOut({error:<span class="c-str">"Unknown action"</span>});
+  <span class="c-key">return</span> jsonOut({
+    contacts:    getData(ss, <span class="c-str">"contacts"</span>),
+    pointReport: getData(ss, <span class="c-str">"Point Report"</span>),
+    redemptions: getData(ss, <span class="c-str">"Redemptions"</span>),
+    exportedAt:  <span class="c-key">new</span> Date().toISOString()
+  });
 }
 
 <span class="c-key">function</span> getData(ss, sheetName) {
@@ -1349,8 +1331,15 @@ function recomputeAndRender(){
       rewards:rewardsByM, reward_list};
   }
 
-  // Store computed D
-  if(Object.keys(D).length>0) localStorage.setItem('ld_computed', JSON.stringify(D));
+  // Store computed D — strip PII (name/phone arrays) before persisting
+  if(Object.keys(D).length>0){
+    const toStore=JSON.parse(JSON.stringify(D));
+    if(toStore.s1&&toStore.s1.inactive){
+      const ia=toStore.s1.inactive;
+      toStore.s1.inactive={hasColumn:ia.hasColumn,totalActive:ia.totalActive,cutoffStr:ia.cutoffStr,blankCount:ia.blankCount,overdueCount:ia.overdueCount,blank:[],overdue:[]};
+    }
+    localStorage.setItem('ld_computed',JSON.stringify(toStore));
+  }
 
   // Update UI
   updateKpis();
@@ -1809,10 +1798,10 @@ async function writeToSheet(action,sheet,data){
   const url=localStorage.getItem('ld_api_url')||'';
   if(!url){addCrudLog('err','❌ กรุณาบันทึก Google Apps Script URL ก่อน');return false;}
   addCrudLog('info','⏳ กำลังเขียนข้อมูลเข้า Google Sheets...');
-  const params=new URLSearchParams({action,sheet});
-  if(data) params.append('data',JSON.stringify(data));
   try{
-    const res=await fetch(url+'?'+params.toString());
+    const body={action,sheet};
+    if(data) body.data=data;
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const json=await res.json();
     if(json.error) throw new Error(json.error);
@@ -1969,36 +1958,18 @@ function setupSheets() {
   SpreadsheetApp.getUi().alert("✅ สร้าง Sheets สำเร็จ!");
 }
 
-// GET: read data or single insert/delete
+// GET: read data only
 function doGet(e) {
-  const action = (e.parameter && e.parameter.action) || "read";
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (action === "read") {
-    return jsonOut({
-      contacts:    getData(ss, "contacts"),
-      pointReport: getData(ss, "Point Report"),
-      redemptions: getData(ss, "Redemptions"),
-      exportedAt:  new Date().toISOString()
-    });
-  }
-  if (action === "insert") {
-    const sh = ss.getSheetByName(e.parameter.sheet);
-    if (!sh) return jsonOut({success:false, error:"Sheet not found"});
-    const data = JSON.parse(e.parameter.data || "{}");
-    const headers = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
-    sh.appendRow(headers.map(h => data[h] !== undefined ? data[h] : ""));
-    return jsonOut({success:true, insertedAt:new Date().toISOString()});
-  }
-  if (action === "delete") {
-    const sh = ss.getSheetByName(e.parameter.sheet);
-    if (!sh) return jsonOut({success:false, error:"Sheet not found"});
-    sh.deleteRow(parseInt(e.parameter.rowId) + 2);
-    return jsonOut({success:true});
-  }
-  return jsonOut({error:"Unknown action"});
+  return jsonOut({
+    contacts:    getData(ss, "contacts"),
+    pointReport: getData(ss, "Point Report"),
+    redemptions: getData(ss, "Redemptions"),
+    exportedAt:  new Date().toISOString()
+  });
 }
 
-// POST: batch replace — รับข้อมูลทั้งหมดจาก Excel upload แล้วเขียนทับ Sheet
+// POST: batch replace / insert / delete — ข้อมูลส่งใน request body (ไม่ใช่ URL)
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
@@ -2015,6 +1986,20 @@ function doPost(e) {
       sh.getRange(1,1,1,headers.length).setFontWeight("bold").setBackground("#004EE6").setFontColor("#ffffff");
       sh.setFrozenRows(1);
       return jsonOut({success:true, inserted:rows.length, sheet:body.sheet});
+    }
+    if (body.action === "insert") {
+      const sh = ss.getSheetByName(body.sheet);
+      if (!sh) return jsonOut({success:false, error:"Sheet not found"});
+      const data = body.data || {};
+      const headers = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
+      sh.appendRow(headers.map(h => data[h] !== undefined ? data[h] : ""));
+      return jsonOut({success:true, insertedAt:new Date().toISOString()});
+    }
+    if (body.action === "delete") {
+      const sh = ss.getSheetByName(body.sheet);
+      if (!sh) return jsonOut({success:false, error:"Sheet not found"});
+      sh.deleteRow(parseInt(body.rowId) + 2);
+      return jsonOut({success:true});
     }
   } catch(err) {
     return jsonOut({success:false, error:err.message});
