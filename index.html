@@ -767,12 +767,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   updateDbSummary();
   updateCrudSection();
   document.getElementById('footerYear').textContent = new Date().getFullYear();
-  // Auto-sync from Google Sheets on load if URL is configured
-  const savedUrl=localStorage.getItem('ld_api_url')||'';
-  if(savedUrl){
-    addLog('info','🔄 Auto-sync จาก Google Sheets...');
-    syncFromApi();
-  }
+  // Auto-sync from Supabase on load
+  addLog('info','🔄 Auto-sync จาก Supabase...');
+  syncFromApi();
 });
 
 // ════════════════════════════════════════════════════════════════
@@ -937,8 +934,8 @@ function processFile(file, slot){
       // Compute inactive analysis from raw contacts (in-memory only, avoids localStorage quota)
       if(slot===0) inactiveData = computeInactiveData(rows);
 
-      // Backup full raw rows to Google Sheet (fire-and-forget, non-blocking)
-      if(localStorage.getItem('ld_api_url')) backupToSheet(slot, rows);
+      // Backup full raw rows to Supabase (fire-and-forget, non-blocking)
+      backupToSheet(slot, rows);
 
       // Process and store
       if(slot===0) storeContacts(rows, fi);
@@ -1735,38 +1732,60 @@ function saveApiUrl(){
   updateCrudSection();
 }
 
+// ── Supabase config ──
+const SUPA={
+  url:'https://uakqwhlpniidbxtwfzva.supabase.co/rest/v1',
+  h:{'Content-Type':'application/json',
+     'apikey':'sb_publishable_XA3J07paGDDi76ar8EaQ1w_rXHIvASB',
+     'Authorization':'Bearer sb_publishable_XA3J07paGDDi76ar8EaQ1w_rXHIvASB'}
+};
+const SUPA_TABLE={'contacts':'contacts','Point Report':'point_report','Redemptions':'redemptions'};
+
+async function supaFetchAll(table){
+  const rows=[], PAGE=1000; let from=0;
+  while(true){
+    const res=await fetch(`${SUPA.url}/${table}?select=*&order=id&limit=${PAGE}&offset=${from}`,{headers:SUPA.h});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const batch=await res.json();
+    rows.push(...batch);
+    if(batch.length<PAGE) break;
+    from+=PAGE;
+  }
+  return rows;
+}
+
 async function syncFromApi(){
-  // Prefer input field value; fall back to saved localStorage URL (for auto-sync on page load)
-  const url=(document.getElementById('apiUrlInput').value||'').trim()||localStorage.getItem('ld_api_url')||'';
-  if(!url){addLog('err','❌ กรุณากรอก Google Apps Script URL ก่อน');return;}
-  addLog('info','⏳ กำลัง sync จาก: '+url.substring(0,50)+'...');
+  addLog('info','⏳ กำลัง sync จาก Supabase...');
   try{
-    const res=await fetch(url,{method:'GET'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const json=await res.json();
-    addLog('info','✓ รับข้อมูลสำเร็จ — ประมวลผล...');
-    // Expect {contacts:[], pointReport:[], redemptions:[], exportedAt:'...'}
-    if(json.contacts&&Array.isArray(json.contacts)){
-      storeContacts(json.contacts,{name:'API Sync',rows:json.contacts.length,uploadDate:new Date().toLocaleString('th-TH')});
-      fileInfo[0]={name:'API Sync',rows:json.contacts.length,uploadDate:new Date().toLocaleString('th-TH')};
-      addLog('ok',`✓ Contacts: ${json.contacts.length} แถว`);
+    const [contacts,pointReport,redemptions]=await Promise.all([
+      supaFetchAll('contacts'),
+      supaFetchAll('point_report'),
+      supaFetchAll('redemptions')
+    ]);
+    const ts=new Date().toLocaleString('th-TH');
+    if(contacts.length){
+      storeContacts(contacts,{name:'Supabase Sync',rows:contacts.length,uploadDate:ts});
+      fileInfo[0]={name:'Supabase Sync',rows:contacts.length,uploadDate:ts};
+      addLog('ok',`✓ Contacts: ${contacts.length.toLocaleString()} แถว`);
     }
-    if(json.pointReport&&Array.isArray(json.pointReport)){
-      storePointReport(json.pointReport,{name:'API Sync',rows:json.pointReport.length,uploadDate:new Date().toLocaleString('th-TH')});
-      fileInfo[1]={name:'API Sync',rows:json.pointReport.length,uploadDate:new Date().toLocaleString('th-TH')};
-      addLog('ok',`✓ Point Report: ${json.pointReport.length} แถว`);
+    if(pointReport.length){
+      storePointReport(pointReport,{name:'Supabase Sync',rows:pointReport.length,uploadDate:ts});
+      fileInfo[1]={name:'Supabase Sync',rows:pointReport.length,uploadDate:ts};
+      addLog('ok',`✓ Point Report: ${pointReport.length.toLocaleString()} แถว`);
     }
-    if(json.redemptions&&Array.isArray(json.redemptions)){
-      storeRedemptions(json.redemptions,{name:'API Sync',rows:json.redemptions.length,uploadDate:new Date().toLocaleString('th-TH')});
-      fileInfo[2]={name:'API Sync',rows:json.redemptions.length,uploadDate:new Date().toLocaleString('th-TH')};
-      addLog('ok',`✓ Redemptions: ${json.redemptions.length} แถว`);
+    if(redemptions.length){
+      storeRedemptions(redemptions,{name:'Supabase Sync',rows:redemptions.length,uploadDate:ts});
+      fileInfo[2]={name:'Supabase Sync',rows:redemptions.length,uploadDate:ts};
+      addLog('ok',`✓ Redemptions: ${redemptions.length.toLocaleString()} แถว`);
     }
-    if(json.exportedAt) addLog('info',`📅 Export at: ${json.exportedAt}`);
+    if(!contacts.length&&!pointReport.length&&!redemptions.length){
+      addLog('info','ℹ️ Supabase ยังไม่มีข้อมูล — อัปโหลด Excel เพื่อ backup ครั้งแรก');
+      return;
+    }
     recomputeAndRender();
     addLog('ok','✅ Sync สำเร็จ! Dashboard อัปเดตแล้ว');
   }catch(err){
     addLog('err','❌ Sync ไม่สำเร็จ: '+err.message);
-    addLog('info','💡 ตรวจสอบว่า Deploy Apps Script ถูกต้อง และตั้ง "Anyone" access');
   }
 }
 
@@ -1781,9 +1800,8 @@ function addLog(type, msg){
 // GOOGLE SHEETS CRUD
 // ════════════════════════════════════════════════════════════════
 function updateCrudSection(){
-  const url=localStorage.getItem('ld_api_url')||'';
   const sec=document.getElementById('crudSection');
-  if(sec) sec.style.display=url?'block':'none';
+  if(sec) sec.style.display='block';
 }
 
 function addCrudLog(type,msg){
@@ -1795,16 +1813,16 @@ function addCrudLog(type,msg){
 }
 
 async function writeToSheet(action,sheet,data){
-  const url=localStorage.getItem('ld_api_url')||'';
-  if(!url){addCrudLog('err','❌ กรุณาบันทึก Google Apps Script URL ก่อน');return false;}
-  addCrudLog('info','⏳ กำลังเขียนข้อมูลเข้า Google Sheets...');
+  const table=SUPA_TABLE[sheet]||sheet;
+  addCrudLog('info','⏳ กำลังเขียนข้อมูลเข้า Supabase...');
   try{
-    const body={action,sheet};
-    if(data) body.data=data;
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const json=await res.json();
-    if(json.error) throw new Error(json.error);
+    let res;
+    if(action==='insert'){
+      res=await fetch(`${SUPA.url}/${table}`,{method:'POST',headers:{...SUPA.h,'Prefer':'return=minimal'},body:JSON.stringify(data)});
+    }else if(action==='delete'&&data&&data.rowId){
+      res=await fetch(`${SUPA.url}/${table}?id=eq.${data.rowId}`,{method:'DELETE',headers:SUPA.h});
+    }
+    if(res&&!res.ok){const t=await res.text();throw new Error(`HTTP ${res.status}: ${t}`);}
     addCrudLog('ok','✅ บันทึกสำเร็จ กำลัง Sync Dashboard...');
     return true;
   }catch(err){
@@ -1907,7 +1925,7 @@ async function submitAdd(type){
 function showClearModal(){document.getElementById('clearModal').classList.add('show');}
 function hideClearModal(){document.getElementById('clearModal').classList.remove('show');}
 function clearAllData(){
-  if(localStorage.getItem('ld_api_url')) clearSheets();
+  clearSheets();
   ['ld_contacts','ld_point','ld_redemp','ld_computed'].forEach(k=>localStorage.removeItem(k));
   fileInfo=[{},{},{}];D=null;inactiveData=null;qaStore=[null,null,null];
   updateKpis();updateDbSummary();updateFileCards();
@@ -2031,34 +2049,38 @@ function jsonOut(data) {
 
 // ── Backup raw rows to Google Sheet after every Excel upload ──
 async function backupToSheet(slot, rows){
-  const url=localStorage.getItem('ld_api_url')||'';
-  if(!url) return;
-  const SHEET_NAMES=['contacts','Point Report','Redemptions'];
-  const sheet=SHEET_NAMES[slot];
-  addLog('info',`⏳ Backup ${rows.length.toLocaleString()} แถว → Sheet "${sheet}"...`);
+  const TABLE_NAMES=['contacts','point_report','redemptions'];
+  const table=TABLE_NAMES[slot];
+  addLog('info',`⏳ Backup ${rows.length.toLocaleString()} แถว → Supabase "${table}"...`);
   try{
-    // mode:no-cors bypasses CORS preflight — Apps Script receives POST, response is opaque
-    await fetch(url,{method:'POST',mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'batch_replace',sheet,rows})
-    });
-    addLog('ok',`✅ ส่งข้อมูล backup แล้ว (${rows.length.toLocaleString()} แถว) — ตรวจสอบใน Sheet ได้เลย`);
+    // Delete existing rows then insert in chunks of 500
+    await fetch(`${SUPA.url}/${table}?id=gte.0`,{method:'DELETE',headers:SUPA.h});
+    const CHUNK=500;
+    for(let i=0;i<rows.length;i+=CHUNK){
+      const res=await fetch(`${SUPA.url}/${table}`,{
+        method:'POST',headers:{...SUPA.h,'Prefer':'return=minimal'},
+        body:JSON.stringify(rows.slice(i,i+CHUNK))
+      });
+      if(!res.ok){const t=await res.text();throw new Error(`HTTP ${res.status}: ${t}`);}
+    }
+    addLog('ok',`✅ Backup สำเร็จ ${rows.length.toLocaleString()} แถว → Supabase`);
   }catch(err){
     addLog('warn',`⚠️ Backup ไม่สำเร็จ: ${err.message}`);
   }
 }
 
 async function clearSheets(){
-  const url=localStorage.getItem('ld_api_url')||'';
-  if(!url) return;
-  addLog('info','⏳ กำลังล้างข้อมูลใน Google Sheet...');
-  for(const sheet of ['contacts','Point Report','Redemptions']){
-    await fetch(url,{method:'POST',mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'batch_replace',sheet,rows:[]})
-    });
+  addLog('info','⏳ กำลังล้างข้อมูลใน Supabase...');
+  try{
+    await Promise.all([
+      fetch(`${SUPA.url}/contacts?id=gte.0`,{method:'DELETE',headers:SUPA.h}),
+      fetch(`${SUPA.url}/point_report?id=gte.0`,{method:'DELETE',headers:SUPA.h}),
+      fetch(`${SUPA.url}/redemptions?id=gte.0`,{method:'DELETE',headers:SUPA.h})
+    ]);
+    addLog('ok','✅ ล้างข้อมูลใน Supabase ทั้งหมดแล้ว');
+  }catch(err){
+    addLog('warn',`⚠️ ล้างไม่สำเร็จ: ${err.message}`);
   }
-  addLog('ok','✅ ล้างข้อมูลใน Sheet ทั้งหมดแล้ว');
 }
 
 // ════════════════════════════════════════════════════════════════
