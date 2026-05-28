@@ -2048,22 +2048,30 @@ function jsonOut(data) {
 }
 
 // ── Backup raw rows to Google Sheet after every Excel upload ──
+const SUPA_COLS={
+  contacts:['Name','Status','Register Date','Phone No','Gender','Tier','Points balance'],
+  point_report:['Date & time','Member name','Member tel','Point type','Points collected','Sale amount (THB)','Source','Channel','Sub channel'],
+  redemptions:['Date & time','Reward name','Reward code','Points used','Member name','Member tel']
+};
+
 async function backupToSheet(slot, rows){
   const TABLE_NAMES=['contacts','point_report','redemptions'];
   const table=TABLE_NAMES[slot];
-  addLog('info',`⏳ Backup ${rows.length.toLocaleString()} แถว → Supabase "${table}"...`);
+  const cols=SUPA_COLS[table];
+  // Keep only columns defined in Supabase schema (strips empty-header cols + unknown cols)
+  const clean=rows.map(r=>{const o={};cols.forEach(c=>{if(r[c]!==undefined&&r[c]!==null)o[c]=r[c];});return o;});
+  addLog('info',`⏳ Backup ${clean.length.toLocaleString()} แถว → Supabase "${table}"...`);
   try{
-    // Delete existing rows then insert in chunks of 500
     await fetch(`${SUPA.url}/${table}?id=gte.0`,{method:'DELETE',headers:SUPA.h});
     const CHUNK=500;
-    for(let i=0;i<rows.length;i+=CHUNK){
+    for(let i=0;i<clean.length;i+=CHUNK){
       const res=await fetch(`${SUPA.url}/${table}`,{
         method:'POST',headers:{...SUPA.h,'Prefer':'return=minimal'},
-        body:JSON.stringify(rows.slice(i,i+CHUNK))
+        body:JSON.stringify(clean.slice(i,i+CHUNK))
       });
       if(!res.ok){const t=await res.text();throw new Error(`HTTP ${res.status}: ${t}`);}
     }
-    addLog('ok',`✅ Backup สำเร็จ ${rows.length.toLocaleString()} แถว → Supabase`);
+    addLog('ok',`✅ Backup สำเร็จ ${clean.length.toLocaleString()} แถว → Supabase`);
   }catch(err){
     addLog('warn',`⚠️ Backup ไม่สำเร็จ: ${err.message}`);
   }
