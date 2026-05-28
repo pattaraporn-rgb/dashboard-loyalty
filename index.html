@@ -968,7 +968,8 @@ function computeInactiveData(rows){
     const lastAct=lastActStr?parseDate(lastActStr):null;
     const lastActIso=lastAct?lastAct.toISOString().slice(0,10):'';
     const regDate=String(findVal(r,['register date','registerdate'])||'').trim();
-    const entry={name,phone,regDate,lastActivityDate:lastActIso};
+    const lineUserId=String(findVal(r,['line user id'])||'').trim();
+    const entry={name,phone,regDate,lastActivityDate:lastActIso,lineUserId};
     if(!lastActStr||!lastActIso) blank.push(entry);
     else if(lastActIso<cutoffStr) overdue.push(entry);
   });
@@ -1554,8 +1555,8 @@ function exportInactiveMembers(type){
   const ia=inactiveData; if(!ia){alert('⚠️ ไม่พบข้อมูล กรุณาอัปโหลดไฟล์ Contacts ใหม่อีกครั้ง');return;}
   const members=type==='blank'?ia.blank:ia.overdue;
   if(!members.length) return;
-  const headers=['ชื่อ','เบอร์โทร','วันสมัคร','Last Activity Date','Status'];
-  const csvRows=[headers,...members.map(m=>[m.name||'',m.phone||'',m.regDate||'',m.lastActivityDate||'',m.status||''])];
+  const headers=['ชื่อ','เบอร์โทร','วันสมัคร','Last Activity Date','Status','Line User ID'];
+  const csvRows=[headers,...members.map(m=>[m.name||'',m.phone||'',m.regDate||'',m.lastActivityDate||'',m.status||'',m.lineUserId||''])];
   const csv=csvRows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
@@ -1766,6 +1767,7 @@ async function syncFromApi(){
     const ts=new Date().toLocaleString('th-TH');
     if(contacts.length){
       storeContacts(contacts,{name:'Supabase Sync',rows:contacts.length,uploadDate:ts});
+      inactiveData = computeInactiveData(contacts);
       fileInfo[0]={name:'Supabase Sync',rows:contacts.length,uploadDate:ts};
       addLog('ok',`✓ Contacts: ${contacts.length.toLocaleString()} แถว`);
     }
