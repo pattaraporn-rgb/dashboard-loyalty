@@ -1519,8 +1519,9 @@ function renderP2(){
   document.getElementById('t1').innerHTML=r;
   document.getElementById('n1').innerHTML=`สมาชิกใหม่ (ACTIVE) <b>${fmt(chartTotal)} คน</b> — ไม่รวมเดือนปัจจุบันที่ข้อมูลยังไม่ครบ`;
 
-  // Inactive members section
+  // Inactive members section (not present in exported HTML)
   const el=document.getElementById('inactiveSection');
+  if(!el) return;
   const ia=s.inactive;
   if(!ia){
     el.style.display='block';
