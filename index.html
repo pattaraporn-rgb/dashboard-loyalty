@@ -1564,7 +1564,7 @@ function renderP2(){
 }
 
 function exportInactiveMembers(type){
-  const ia=inactiveData; if(!ia) return;
+  const ia=inactiveData; if(!ia){alert('⚠️ ไม่พบข้อมูล กรุณาอัปโหลดไฟล์ Contacts ใหม่อีกครั้ง');return;}
   const members=type==='blank'?ia.blank:ia.overdue;
   if(!members.length) return;
   const headers=['ชื่อ','เบอร์โทร','วันสมัคร','Last Activity Date','Status'];
