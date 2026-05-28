@@ -982,7 +982,7 @@ function storeContacts(rows, fi){
     const status = findVal(r,['status']);
     const regDate = parseDate(findVal(r,['register date','registerdate']));
     return {status, regDate: regDate ? getPeriod(regDate) : null};
-  }).filter(r=>r.regDate);
+  });
   localStorage.setItem('ld_contacts', JSON.stringify({rows:processed, fi}));
 }
 
@@ -1184,12 +1184,12 @@ function parseDate(val){
   }
   const s=String(val).trim();
   if(!s) return null;
-  // DD/MM/YYYY HH:MM or DD/MM/YYYY
+  // DD/MM/YYYY HH:MM or DD/MM/YYYY (handles Buddhist Era: year>2499 → subtract 543)
   const m1=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if(m1) return new Date(+m1[3],+m1[2]-1,+m1[1]);
-  // YYYY-MM-DD...
+  if(m1){const y=+m1[3]>2499?+m1[3]-543:+m1[3];return new Date(y,+m1[2]-1,+m1[1]);}
+  // YYYY-MM-DD... (handles Buddhist Era)
   const m2=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if(m2) return new Date(+m2[1],+m2[2]-1,+m2[3]);
+  if(m2){const y=+m2[1]>2499?+m2[1]-543:+m2[1];return new Date(y,+m2[2]-1,+m2[3]);}
   const d=new Date(s);
   return isNaN(d)?null:d;
 }
@@ -1218,13 +1218,14 @@ function recomputeAndRender(){
   if(contStore){
     const rows = contStore.rows;
     const curPeriod = getPeriod(new Date());
-    const activeRows = rows.filter(r=>String(r.status).trim().toUpperCase()==='ACTIVE' && r.regDate && r.regDate<curPeriod);
+    const allActive = rows.filter(r=>String(r.status).trim().toUpperCase()==='ACTIVE');
+    const activeRows = allActive.filter(r=>r.regDate && r.regDate<curPeriod);
     const byM = {};
     activeRows.forEach(r=>{byM[r.regDate]=(byM[r.regDate]||0)+1;});
     const months = Object.keys(byM).sort();
     const active = months.map(m=>byM[m]);
     const pch = active.map((v,i)=>i===0?null:(active[i-1]?((v-active[i-1])/active[i-1]):null));
-    D.s1 = {months, active, pch, total_active: active.reduce((a,b)=>a+b,0)};
+    D.s1 = {months, active, pch, total_active: allActive.length};
     // Attach in-memory inactive data (null if page was refreshed without re-uploading)
     D.s1.inactive = inactiveData;
   }
@@ -2250,12 +2251,12 @@ function exportAsHTML(){
   <button onclick="switchTab(4)"><span class="tnum">3</span> Points Report</button>
   <button onclick="switchTab(5)"><span class="tnum">4</span> Redemption</button>
 </div>
-<div class="export-banner">📸 Dashboard Snapshot &nbsp;·&nbsp; <span>Export วันที่ ${exportDate}</span></div>
 <div class="content">${panelsHtml}</div>
 <footer>
 <b>วิธีคำนวณ:</b> %Ch = (เดือนนี้ − เดือนก่อนหน้า) ÷ เดือนก่อนหน้า &nbsp;|&nbsp; New User: Status=ACTIVE &nbsp;|&nbsp; Sales/Points: Point type=GIVEN<br>
 <div style="margin-top:10px;padding-top:10px;border-top:1px solid #222;color:#888;">© ${yr} Rocket Innovation Dashboard &nbsp;·&nbsp; จัดทำขึ้นเพื่อเป็นข้อมูล Internal และเพื่อวิเคราะห์ข้อมูลเท่านั้น</div>
 </footer>
+<div class="export-banner">📸 Dashboard Snapshot &nbsp;·&nbsp; <span>Export วันที่ ${exportDate}</span></div>
 <script>${embJS}<\/script>
 </body></html>`;
 
