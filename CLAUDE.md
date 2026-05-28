@@ -16,6 +16,10 @@ Example of past bug: `inactiveSection` existed in main HTML but not in `panelsHt
 
 **Rule: after any panel HTML edit, grep for the element ID in `exportAsHTML` and confirm it's present.**
 
+## Column name normalization
+- `findVal` normalizes `_` → space before comparing, so `register_date` matches `'register date'` and `last_activity_date` matches `'last activity date'`
+- This lets Supabase snake_case column names match Excel-style names transparently
+
 ## Render function dependencies
 - `renderP2` → references `inactiveSection` (exists in main HTML, skip with `if(!el) return` in export)
 - `renderP3` → requires `D.s3` (from point_report data)

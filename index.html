@@ -1166,11 +1166,13 @@ function renderQualityReport(){
 // ── Helpers ──
 function findVal(row, keys){
   const rowKeys = Object.keys(row);
+  const norm = s => s.toLowerCase().trim().replace(/_/g,' ');
   for(const k of keys){
-    const found = rowKeys.find(rk=>rk.toLowerCase().trim()===k.toLowerCase());
-    if(found!==undefined) return row[found];
-    const partial = rowKeys.find(rk=>rk.toLowerCase().includes(k.toLowerCase()));
-    if(partial!==undefined) return row[partial];
+    const kn = norm(k);
+    const found = rowKeys.find(rk => norm(rk) === kn);
+    if(found !== undefined) return row[found];
+    const partial = rowKeys.find(rk => norm(rk).includes(kn));
+    if(partial !== undefined) return row[partial];
   }
   return '';
 }
@@ -1767,6 +1769,7 @@ async function syncFromApi(){
     ]);
     const ts=new Date().toLocaleString('th-TH');
     if(contacts.length){
+      inactiveData = computeInactiveData(contacts);
       storeContacts(contacts,{name:'Supabase Sync',rows:contacts.length,uploadDate:ts});
       fileInfo[0]={name:'Supabase Sync',rows:contacts.length,uploadDate:ts};
       addLog('ok',`✓ Contacts: ${contacts.length.toLocaleString()} แถว`);
@@ -2052,7 +2055,7 @@ function jsonOut(data) {
 
 // ── Backup raw rows to Google Sheet after every Excel upload ──
 const SUPA_COLS={
-  contacts:['Name','Status','Register Date','Phone No','Gender','Tier','Points balance'],
+  contacts:['Name','Status','Register Date','Last Activity Date','Phone No','Gender','Tier','Points balance'],
   point_report:['Date & time','Member name','Member tel','Point type','Points collected','Sale amount (THB)','Source','Channel','Sub channel'],
   redemptions:['Date & time','Reward name','Reward code','Points used','Member name','Member tel']
 };
