@@ -81,6 +81,7 @@ h1{font-size:18px;font-weight:700;margin:2px 0;opacity:.9;}
 
 /* TABLES */
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04);background:#fff;}
+.tbl-wrap.tbl-narrow{max-width:760px;margin-left:auto;margin-right:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;}
 th{background:var(--brand);color:#fff;font-weight:700;padding:10px 12px;text-align:right;border:1px solid var(--brand-dark);white-space:nowrap;font-size:11px;letter-spacing:.2px;text-transform:uppercase;}
 th:first-child{text-align:left;text-transform:none;letter-spacing:0;font-size:12px;}
@@ -594,7 +595,7 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
   <div id="p2_content" style="display:none">
     <div class="stat-row" id="kpi1"></div>
     <div class="chartbox"><canvas id="c1"></canvas></div>
-    <div class="tbl-wrap"><div id="t1"></div></div>
+    <div class="tbl-wrap tbl-narrow"><div id="t1"></div></div>
     <div class="note" id="n1"></div>
     <div id="inactiveSection" style="display:none;margin-top:20px"></div>
   </div>

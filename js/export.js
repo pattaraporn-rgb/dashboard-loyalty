@@ -210,7 +210,7 @@ function exportAsHTML(){
   <div class="sh"><span class="snum">1</span><span class="stitle">New User Registration</span><span class="sen">ผู้ใช้รายใหม่ (ACTIVE)</span></div>
   <div class="desc">จำนวนผู้ใช้ใหม่สถานะ <b>ACTIVE</b> จัดกลุ่มตาม Register Date — ไม่รวมเดือนปัจจุบันที่ข้อมูลยังไม่ครบ</div>
   <div id="p2_empty" class="empty-state" style="display:none"><div class="es-icon"><i data-lucide="users"></i></div><h3>ไม่มีข้อมูล</h3></div>
-  <div id="p2_content" style="display:none"><div class="stat-row" id="kpi1"></div><div class="chartbox"><canvas id="c1"></canvas></div><div class="tbl-wrap"><div id="t1"></div></div><div class="note" id="n1"></div></div>
+  <div id="p2_content" style="display:none"><div class="stat-row" id="kpi1"></div><div class="chartbox"><canvas id="c1"></canvas></div><div class="tbl-wrap tbl-narrow"><div id="t1"></div></div><div class="note" id="n1"></div></div>
 </div></div>
 <!-- PANEL 2: SALES -->
 <div class="panel" id="p3">
