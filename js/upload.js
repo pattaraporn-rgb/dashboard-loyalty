@@ -56,7 +56,7 @@ function processFile(file, slot){
 // ── Inactive member analysis (in-memory, not persisted) ──
 function computeInactiveData(rows){
   const cutoff=new Date(); cutoff.setMonth(cutoff.getMonth()-3);
-  const cutoffStr=cutoff.toISOString().slice(0,10);
+  const cutoffStr=toLocalISODate(cutoff);
   const LAD_KEYS=['last activity date','lastactivitydate','last activity','lastactivity','last login','lastlogin'];
   const hasColumn=rows.some(r=>String(findVal(r,LAD_KEYS)||'').trim()!=='');
   const activeRows=rows.filter(r=>String(findVal(r,['status'])||'').trim().toUpperCase()==='ACTIVE');
@@ -66,7 +66,7 @@ function computeInactiveData(rows){
     const phone=String(findVal(r,['phone no','phone','tel','telephone','mobile','member tel','membertel'])||'').replace(/\D/g,'').trim();
     const lastActStr=String(findVal(r,LAD_KEYS)||'').trim();
     const lastAct=lastActStr?parseDate(lastActStr):null;
-    const lastActIso=lastAct?lastAct.toISOString().slice(0,10):'';
+    const lastActIso=lastAct?toLocalISODate(lastAct):'';
     const regDate=String(findVal(r,['register date','registerdate'])||'').trim();
     const entry={name,phone,regDate,lastActivityDate:lastActIso};
     if(!lastActStr||!lastActIso) blank.push(entry);

@@ -69,6 +69,22 @@ function getPeriod(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 
+// ── Local-timezone-safe date formatters (avoid toISOString UTC shift) ──
+// Bug fixed: toISOString() converts local Date to UTC, so 1 May 00:00 ICT
+// becomes "2025-04-30" → wrong month when feeding back into parseDate/Supabase.
+function toLocalISODate(d){
+  if(!d||isNaN(d)) return '';
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function toLocalISODateTime(d){
+  if(!d||isNaN(d)) return '';
+  return `${toLocalISODate(d)}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
 // ── Display formatting ──
 const fmt=n=>{if(!n&&n!==0)return'–';return Math.round(n).toLocaleString('en-US');};
 function pchCell(v){

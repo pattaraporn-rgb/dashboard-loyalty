@@ -121,7 +121,7 @@ function exportQaReport(slot){
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=`qa_${q.label.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download=`qa_${q.label.replace(/\s/g,'_')}_${toLocalISODate(new Date())}.csv`;
   a.click();
 }
 

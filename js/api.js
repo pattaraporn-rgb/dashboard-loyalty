@@ -108,8 +108,8 @@ async function writeToSheet(action,sheet,data){
 
 function openAddModal(type){
   const now=new Date();
-  const dtLocal=now.toISOString().slice(0,16);
-  const dateOnly=now.toISOString().slice(0,10);
+  const dtLocal=toLocalISODateTime(now);
+  const dateOnly=toLocalISODate(now);
   if(type==='contact'){
     document.getElementById('ci_regdate').value=dateOnly;
     document.getElementById('ci_name').value='';
@@ -200,7 +200,7 @@ async function submitAdd(type){
 function supaDateStr(v){
   const d=parseDate(v);
   if(!d) return v;
-  return d.toISOString().slice(0,10); // "YYYY-MM-DD" — safe for Supabase text column
+  return toLocalISODate(d); // "YYYY-MM-DD" using local timezone (avoids UTC shift to previous day)
 }
 
 async function backupToSheet(slot, rows){

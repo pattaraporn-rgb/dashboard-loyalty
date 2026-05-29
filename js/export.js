@@ -298,6 +298,6 @@ function exportAsHTML(){
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=storeName.replace(/[^\w฀-๿]/g,'_')+'_dashboard_'+new Date().toISOString().split('T')[0]+'.html';
+  a.download=storeName.replace(/[^\w฀-๿]/g,'_')+'_dashboard_'+toLocalISODate(new Date())+'.html';
   document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
 }

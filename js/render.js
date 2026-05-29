@@ -169,7 +169,7 @@ function exportInactiveMembers(type){
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=`inactive_${type}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download=`inactive_${type}_${toLocalISODate(new Date())}.csv`;
   a.click();
 }
 
