@@ -5,9 +5,57 @@
 // Chart.js global defaults (Chart must be loaded via CDN before this file)
 Chart.defaults.font.family="'Tahoma','Segoe UI',sans-serif";
 Chart.defaults.font.size=11;
+Chart.defaults.color='#1A1A1A';
+// Tooltip polish: dark branded background, padded, formatted
+Chart.defaults.plugins.tooltip.backgroundColor='rgba(20,22,46,0.95)';
+Chart.defaults.plugins.tooltip.titleColor='#fff';
+Chart.defaults.plugins.tooltip.titleFont={weight:'bold',size:12};
+Chart.defaults.plugins.tooltip.bodyColor='#fff';
+Chart.defaults.plugins.tooltip.bodyFont={size:11};
+Chart.defaults.plugins.tooltip.padding={top:10,bottom:10,left:14,right:14};
+Chart.defaults.plugins.tooltip.cornerRadius=8;
+Chart.defaults.plugins.tooltip.boxPadding=6;
+Chart.defaults.plugins.tooltip.boxWidth=10;
+Chart.defaults.plugins.tooltip.boxHeight=10;
+Chart.defaults.plugins.tooltip.borderColor='rgba(255,255,255,0.08)';
+Chart.defaults.plugins.tooltip.borderWidth=1;
+// Legend polish: more breathing room, consistent box size
+Chart.defaults.plugins.legend.labels.padding=14;
+Chart.defaults.plugins.legend.labels.boxWidth=12;
+Chart.defaults.plugins.legend.labels.boxHeight=12;
+Chart.defaults.plugins.legend.labels.usePointStyle=false;
+// Animation: a touch slower so values feel like they "land"
+Chart.defaults.animation.duration=600;
 // Register chartjs-plugin-datalabels globally (loaded via CDN as ChartDataLabels)
 // Default display:false so other charts don't show labels unless they opt in.
 if(typeof ChartDataLabels!=='undefined'){Chart.register(ChartDataLabels);Chart.defaults.set('plugins.datalabels',{display:false});}
+
+// ── Datalabel helpers ──
+// Total label on top of a stacked bar chart — finds the highest non-zero dataset
+// at each index and renders the sum of all datasets there.
+function topOfStackLabel(){
+  return {
+    display:ctx=>{
+      const datasets=ctx.chart.data.datasets;
+      // walk from top dataset down to find first one with a positive value
+      for(let i=datasets.length-1;i>=0;i--){
+        if((+datasets[i].data[ctx.dataIndex]||0)>0) return ctx.datasetIndex===i;
+      }
+      return false;
+    },
+    formatter:(_,ctx)=>fmt(ctx.chart.data.datasets.reduce((s,ds)=>s+(+ds.data[ctx.dataIndex]||0),0)),
+    anchor:'end',align:'top',
+    color:'#1A1A1A',font:{weight:'bold',size:10}
+  };
+}
+// Simple value label above a non-stacked bar
+function valueLabel(formatter){
+  return {display:true,anchor:'end',align:'top',
+    color:'#1A1A1A',font:{weight:'bold',size:10},
+    formatter:v=>(formatter||fmt)(v)};
+}
+// Soft grid styling — light enough to not compete with the data
+const softGrid={color:'rgba(0,0,0,0.05)',drawBorder:false};
 
 // ── Chart lifecycle ──
 function destroyCharts(ids){ids.forEach(id=>{if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}});}
@@ -123,7 +171,7 @@ function renderP2(){
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
       plugins:{
         legend:{display:false},
-        tooltip:{filter:i=>i.datasetIndex===0},
+        tooltip:{filter:i=>i.datasetIndex===0,callbacks:{label:c=>` ${fmt(c.parsed.y)} คน`}},
         datalabels:{display:ctx=>ctx.dataset.type==='bar',
           labels:{
             value:{anchor:'end',align:'top',color:'#1A1A1A',font:{weight:'bold',size:11},formatter:v=>fmt(v)},
@@ -142,7 +190,7 @@ function renderP2(){
           }
         }
       },
-      scales:{y:{beginAtZero:true,ticks:{callback:v=>fmt(v)}}}
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
     }
   });
   const chartTotal=s.active.reduce((a,b)=>a+b,0);
@@ -210,7 +258,14 @@ function renderP3(){
   const s=D.s3, lab=s.months.map(m=>ML[m]||m);
   mkChart('c3',{type:'bar',
     data:{labels:lab, datasets:CH_KEYS.filter(k=>s.data[k]).map(k=>({label:k,data:s.data[k],backgroundColor:CHART_COLORS[k],borderRadius:3}))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{callback:v=>fmt(v)}}}}
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
+      plugins:{
+        legend:{position:'top',align:'end'},
+        datalabels:topOfStackLabel(),
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ฿${fmt(c.parsed.y)}`}}
+      },
+      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
+    }
   });
   const useKeys=CH_KEYS.filter(k=>s.data[k]&&s.totals[k]>0);
   document.getElementById('kpi3').innerHTML=
@@ -230,11 +285,25 @@ function renderP4(){
   const bKeys=(b.sckeys||SC_KEYS).filter(k=>b.data[k]&&b.totals[k]>0);
   mkChart('c4a',{type:'bar',
     data:{labels:lab,datasets:aKeys.map(k=>({label:k,data:a.data[k],backgroundColor:CHART_COLORS[k],borderRadius:3}))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{callback:v=>fmt(v)}}}}
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
+      plugins:{
+        legend:{position:'top',align:'end'},
+        datalabels:topOfStackLabel(),
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)} แต้ม`}}
+      },
+      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
+    }
   });
   mkChart('c4b',{type:'bar',
-    data:{labels:lab,datasets:bKeys.map(k=>({label:k,data:b.data[k],backgroundColor:CHART_COLORS[k]||'#999'}))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{callback:v=>fmt(v)}}}}
+    data:{labels:lab,datasets:bKeys.map(k=>({label:k,data:b.data[k],backgroundColor:CHART_COLORS[k]||'#999',borderRadius:3}))},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
+      plugins:{
+        legend:{position:'top',align:'end'},
+        datalabels:topOfStackLabel(),
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)} แต้ม`}}
+      },
+      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
+    }
   });
   const wpTotal=b.totals['Welcome Point']||0;
   document.getElementById('kpi4').innerHTML=
@@ -290,14 +359,29 @@ function renderP5(){
   const lab=s.months.map(m=>ML[m]||m);
   mkChart('c5a',{type:'bar',
     data:{labels:lab,datasets:[{label:'จำนวนที่แลก (ครั้ง)',data:s.count,backgroundColor:'#7B1E26',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'},title:{display:true,text:'จำนวนการแลกของรางวัล'}},scales:{y:{beginAtZero:true}}}
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
+      plugins:{
+        legend:{display:false},
+        title:{display:true,text:'จำนวนการแลกของรางวัล',font:{size:12,weight:'bold'},padding:{bottom:10}},
+        datalabels:valueLabel(),
+        tooltip:{callbacks:{label:c=>` ${fmt(c.parsed.y)} ครั้ง`}}
+      },
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
+    }
   });
   mkChart('c5b',{type:'bar',
     data:{labels:lab,datasets:[
       {label:'Give Points (แจก-ทุกแหล่ง)',data:s5GivePts,backgroundColor:'#3A4DA0',borderRadius:3},
       {label:'Used Points (REDEEMED)',data:s.pts_point,backgroundColor:'#7B1E26',borderRadius:3}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'},title:{display:true,text:'Give Points เทียบ Used Points'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmt(v)}}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',align:'end'},
+        title:{display:true,text:'Give Points เทียบ Used Points',font:{size:12,weight:'bold'},padding:{bottom:10}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)} แต้ม`}}
+      },
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
+    }
   });
   document.getElementById('kpi5').innerHTML=
     stat(fmt(s.total_count),'การแลกทั้งหมด','#7B1E26')+
