@@ -5,6 +5,9 @@
 // Chart.js global defaults (Chart must be loaded via CDN before this file)
 Chart.defaults.font.family="'Tahoma','Segoe UI',sans-serif";
 Chart.defaults.font.size=11;
+// Register chartjs-plugin-datalabels globally (loaded via CDN as ChartDataLabels)
+// Default display:false so other charts don't show labels unless they opt in.
+if(typeof ChartDataLabels!=='undefined'){Chart.register(ChartDataLabels);Chart.defaults.set('plugins.datalabels',{display:false});}
 
 // ── Chart lifecycle ──
 function destroyCharts(ids){ids.forEach(id=>{if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}});}
@@ -110,9 +113,22 @@ function renderP2(){
   if(!D||!D.s1){ setPanelContent('p2',false); return; }
   setPanelContent('p2',true);
   const s=D.s1, lab=s.months.map(m=>ML[m]||m);
+  const brand=getBrandColor(), trendColor=darkenColor(brand,0.35);
   mkChart('c1',{type:'bar',
-    data:{labels:lab,datasets:[{label:'สมาชิกใหม่ (ACTIVE)',data:s.active,backgroundColor:getBrandColor(),borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmt(v)}}}}
+    data:{labels:lab,datasets:[
+      {type:'bar',label:'สมาชิกใหม่ (ACTIVE)',data:s.active,backgroundColor:brand,borderRadius:4,order:2},
+      {type:'line',label:'Trend',data:s.active,borderColor:trendColor,backgroundColor:trendColor,
+        borderWidth:2,pointRadius:5,pointHoverRadius:7,tension:0.3,fill:false,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{filter:i=>i.datasetIndex===0},
+        datalabels:{display:ctx=>ctx.dataset.type==='bar',anchor:'end',align:'top',
+          color:'#1A1A1A',font:{weight:'bold',size:11},formatter:v=>fmt(v)}
+      },
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>fmt(v)}}}
+    }
   });
   const chartTotal=s.active.reduce((a,b)=>a+b,0);
   const max=s.active.length?Math.max(...s.active):0, imax=s.active.indexOf(max);

@@ -172,6 +172,7 @@ function exportAsHTML(){
     'const ML='+JSON.stringify(ML)+';',
     'let chartInstances={};',
     'Chart.defaults.font.family="\'Sarabun\',\'Tahoma\',sans-serif";Chart.defaults.font.size=11;',
+    'if(typeof ChartDataLabels!=="undefined"){Chart.register(ChartDataLabels);Chart.defaults.set("plugins.datalabels",{display:false});}',
     darkenColor.toString(),
     lightenColor.toString(),
     'function getBrandColor(){return S.color||"#004EE6";}',
@@ -255,6 +256,7 @@ function exportAsHTML(){
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${storeName} — Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"><\/script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
