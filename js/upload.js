@@ -69,7 +69,8 @@ function computeInactiveData(rows){
     const lastActIso=lastAct?toLocalISODate(lastAct):'';
     const regDate=String(findVal(r,['register date','registerdate'])||'').trim();
     const lineUserId=String(findVal(r,['line user id','line user','lineuserid','line id'])||'').trim();
-    const entry={name,phone,regDate,lastActivityDate:lastActIso,lineUserId};
+    const status=String(findVal(r,['status'])||'').trim().toUpperCase();
+    const entry={name,phone,regDate,lastActivityDate:lastActIso,lineUserId,status};
     if(!lastActStr||!lastActIso) blank.push(entry);
     else if(lastActIso<cutoffStr) overdue.push(entry);
   });
