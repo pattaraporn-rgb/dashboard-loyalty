@@ -962,7 +962,7 @@ function computeInactiveData(rows){
   const blank=[], overdue=[];
   activeRows.forEach(r=>{
     const name=String(findVal(r,['name','full name','fullname'])||'').trim();
-    const phone=String(findVal(r,['phone','tel','telephone','mobile','member tel','membertel'])||'').replace(/\D/g,'').trim();
+    const phone=String(findVal(r,['phone no','phone','tel','telephone','mobile','member tel','membertel'])||'').replace(/\D/g,'').trim();
     const lastActStr=String(findVal(r,LAD_KEYS)||'').trim();
     const lastAct=lastActStr?parseDate(lastActStr):null;
     const lastActIso=lastAct?lastAct.toISOString().slice(0,10):'';
@@ -1016,7 +1016,7 @@ const QA_BONUS_SOURCES=['welcome point','invite friend','inviter friend','survey
 function validateContacts(rows){
   const issues=[], activePhones={};
   rows.forEach((r,i)=>{
-    const phone=String(findVal(r,['phone','tel','telephone','mobile','member tel','membertel'])||'').replace(/\D/g,'').trim();
+    const phone=String(findVal(r,['phone no','phone','tel','telephone','mobile','member tel','membertel'])||'').replace(/\D/g,'').trim();
     const name=String(findVal(r,['name','full name','fullname'])||'').trim();
     const dateStr=String(findVal(r,['register date','registerdate'])||'').trim();
     const status=String(findVal(r,['status'])||'').trim();
@@ -2076,8 +2076,8 @@ async function backupToSheet(slot, rows){
   const TABLE_NAMES=['contacts','point_report','redemptions'];
   const table=TABLE_NAMES[slot];
   const cols=SUPA_COLS[table];
-  // Keep only schema columns; use findVal for case-insensitive column lookup; convert dates → "YYYY-MM-DD"
-  const clean=rows.map(r=>{const o={};cols.forEach(c=>{const v=findVal(r,[c]);if(v!==''&&v!=null)o[c]=SUPA_DATE_COLS.has(c)?supaDateStr(v):v;});return o;});
+  // Keep only schema columns; all rows must have identical keys (PGRST102 requires uniform keys in batch insert)
+  const clean=rows.map(r=>{const o={};cols.forEach(c=>{const v=findVal(r,[c]);o[c]=(v!==''&&v!=null)?(SUPA_DATE_COLS.has(c)?supaDateStr(v):v):null;});return o;});
   addLog('info',`⏳ Backup ${clean.length.toLocaleString()} แถว → Supabase "${table}"...`);
   try{
     await fetch(`${SUPA.url}/${table}?id=gte.0`,{method:'DELETE',headers:SUPA.h});
