@@ -65,6 +65,10 @@ const SUPA_DATE_COLS=new Set([
 const SUPA_ALIASES={
   // Some CRM exports name the phone column "Phone No" instead of "Tel"
   'Tel': ['Phone No','Tel','Phone','Phone Number','Mobile','Telephone','เบอร์โทร'],
+  // "Provicne Name" keeps the Excel typo; some exports spell it correctly as "Province Name"
+  'Provicne Name': ['Province Name','Provicne Name'],
+  // Some exports label the traffic column "Traffic Name" instead of "Traffic Source"
+  'Traffic Source': ['Traffic Name','Traffic Source'],
 };
 
 // ── Global mutable state ──
