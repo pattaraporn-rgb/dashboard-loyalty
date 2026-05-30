@@ -330,7 +330,7 @@ function renderP4(){
     data:{labels:lab,datasets:aKeys.map(k=>({label:k,data:a.data[k],backgroundColor:CHART_COLORS[k],borderRadius:3}))},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
       plugins:{
-        legend:{position:'top',align:'end'},
+        legend:{position:'top',align:'end',onClick:focusLegendClick},
         datalabels:topOfStackLabel(),
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)} แต้ม`}}
       },
@@ -341,7 +341,7 @@ function renderP4(){
     data:{labels:lab,datasets:bKeys.map(k=>({label:k,data:b.data[k],backgroundColor:CHART_COLORS[k]||'#999',borderRadius:3}))},
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
       plugins:{
-        legend:{position:'top',align:'end'},
+        legend:{position:'top',align:'end',onClick:focusLegendClick},
         datalabels:topOfStackLabel(),
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)} แต้ม`}}
       },
@@ -419,7 +419,7 @@ function renderP5(){
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{
-        legend:{position:'top',align:'end'},
+        legend:{position:'top',align:'end',onClick:focusLegendClick},
         title:{display:true,text:'Give Points เทียบ Used Points',font:{size:12,weight:'bold'},padding:{bottom:10}},
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)} แต้ม`}}
       },
