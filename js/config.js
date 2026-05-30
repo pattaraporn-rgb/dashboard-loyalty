@@ -32,17 +32,37 @@ const SUPA={
      'Authorization':'Bearer sb_publishable_XA3J07paGDDi76ar8EaQ1w_rXHIvASB'}
 };
 const SUPA_TABLE={'contacts':'contacts','Point Report':'point_report','Redemptions':'redemptions'};
+// SUPA_COLS mirror the Excel column headers EXACTLY (case + spacing preserved).
+// Typos in the Excel source (e.g. "Provicne Name") are kept on purpose so backup
+// matches without aliasing.
 const SUPA_COLS={
-  contacts:['Name','Status','Register Date','Last Activity Date','Last Login','Phone No','Gender','Tier','Points balance','Line User ID'],
-  point_report:['Date & time','Member name','Member tel','Point type','Points collected','Sale amount (THB)','Source','Channel','Sub channel'],
-  redemptions:['Date & time','Reward name','Reward code','Points used','Member name','Member tel']
+  contacts:[
+    'Name','First Name','Last Name','Address','Provicne Name','District Name','Sub district Name',
+    'Post code','full Address','Profile image URL','Date of Birth','LINE user id','Status',
+    'Group Member Type','Member Type','Gender','Email','Tel','Register date','Last login date',
+    'Last activity date','Tier','Points balance','Points collected','Points used','Rewards used',
+    'Benefit used','Coupon Balance','Coupon used','Sales (บาท)','Orders',
+    'Average sales per order (บาท)','Total Sales Amount','Traffic Source',
+    'firstName','lastName','passportNo','dateOfBirth'
+  ],
+  point_report:[
+    'Date & time','Member name','Member tel','Point type','Points collected','Sale amount (THB)',
+    'Source','Channel','Sub channel','Province','Receipt code','Admin name','Note','Expire date'
+  ],
+  redemptions:[
+    'Date & time','Reward name','Reward code','Points used','Member name','Member tel',
+    'Address','Sub District','District','Province','Postcode','Redemption code','Alien code','Admin name'
+  ]
 };
-const SUPA_DATE_COLS=new Set(['Register Date','Last Activity Date','Last Login','Date & time']);
-// Excel column names may differ from Supabase column names — list alternatives here
-const SUPA_ALIASES={
-  'Phone No':    ['phone no','tel','telephone','phone','mobile'],
-  'Line User ID':['line user id','line user','lineuserid','line id'],
-};
+// Date-shaped columns get normalised to YYYY-MM-DD before backup (supaDateStr in api.js).
+const SUPA_DATE_COLS=new Set([
+  'Register date','Last login date','Last activity date','Date of Birth',
+  'Date & time','Expire date'
+]);
+// Supabase column names match Excel column names exactly now, so no aliasing is needed.
+// Keep the object so backupToSheet's `SUPA_ALIASES[c]||[c]` fallback still works;
+// add an entry only if a future Excel file uses a different header for a Supabase column.
+const SUPA_ALIASES={};
 
 // ── Global mutable state ──
 let D = null;                                      // computed dashboard data
