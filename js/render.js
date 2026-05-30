@@ -277,26 +277,31 @@ function renderP3(){
   const s=D.s3, lab=s.months.map(m=>ML[m]||m);
   const useKeys=CH_KEYS.filter(k=>s.data[k]&&s.totals[k]>0);
 
-  // Grouped bars need horizontal space per month group. Set min-width on the
-  // scroll wrapper so the chart can scroll instead of cramming bars into a
-  // narrow viewport. Roughly: (channel-count * 16px bar + 28px gap) per month.
-  const minPerMonth=Math.max(70,useKeys.length*16+28);
-  const minWidth=Math.max(720,s.months.length*minPerMonth);
+  // Lines need ~90px per month for labels to breathe; horizontal scroll handles
+  // long time ranges. Min 720px so a short range still fills the panel.
+  const minWidth=Math.max(720,s.months.length*90);
   const scrollInner=document.querySelector('#p3_content .chart-scroll-inner');
   if(scrollInner) scrollInner.style.minWidth=minWidth+'px';
 
-  mkChart('c3',{type:'bar',
+  // Multi-line chart: one line per channel. Grouped bars made small channels
+  // (Lazada, Loyalty Manual) invisible whenever a dominant channel (Shopee)
+  // was on the same scale. Lines stay legible even when flat, point markers +
+  // value labels show exact numbers, and the focus-on-click legend isolates a
+  // single channel with every monthly number readable.
+  mkChart('c3',{type:'line',
     data:{labels:lab, datasets:useKeys.map(k=>({
-      label:k, data:s.data[k], backgroundColor:CHART_COLORS[k],
-      borderRadius:3, maxBarThickness:30
+      label:k, data:s.data[k],
+      borderColor:CHART_COLORS[k], backgroundColor:CHART_COLORS[k],
+      borderWidth:2.5, tension:0.3, fill:false,
+      pointRadius:4, pointHoverRadius:7,
+      // White-fill / colored-ring markers stay readable even where lines cross
+      pointBackgroundColor:'#fff', pointBorderColor:CHART_COLORS[k], pointBorderWidth:2
     }))},
-    // Grouped (not stacked) — each channel sits side-by-side per month for easy comparison
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28}},
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{position:'top',align:'end',onClick:focusLegendClick,
           labels:{padding:14,boxWidth:14,boxHeight:14,usePointStyle:false}},
-        // Tooltip groups all channels for the hovered month and adds a footer with the total
         tooltip:{
           callbacks:{
             label:c=>` ${c.dataset.label}: ฿${fmt(c.parsed.y)}`,
@@ -304,6 +309,17 @@ function renderP3(){
           },
           footerFont:{weight:'bold',size:12},
           footerMarginTop:8
+        },
+        // Value labels on every point. display:'auto' hides labels that would
+        // overlap each other → when 5 lines crowd a region only the readable
+        // labels show. Solo a channel (click legend) → all labels appear.
+        datalabels:{
+          display:'auto', anchor:'end', align:'top', offset:6,
+          color:ctx=>ctx.dataset.borderColor,
+          font:{weight:'bold',size:9},
+          backgroundColor:'rgba(255,255,255,0.88)',
+          borderRadius:4, padding:{top:2,bottom:2,left:5,right:5},
+          formatter:v=>v>0?fmt(v):''
         }
       },
       scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
