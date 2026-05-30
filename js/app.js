@@ -3,12 +3,17 @@
 // Must load LAST. References functions from all other files.
 // ════════════════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+  // ── AUTH GATE — block the dashboard until a @rocket.in.th user is signed in ──
+  const session = await guardSession();
+  if(!session) return;   // login / denied screen is shown; do NOT boot the dashboard
+
+  // ── authorized → boot dashboard (REST calls now carry the user's JWT) ──
   initColorPresets();
   loadSettings();
   loadStoredData();
   updateDbSummary();
-  document.getElementById('footerYear').textContent = new Date().getFullYear();
   refreshIcons();
   // Auto-sync from Supabase on load
   addLog('info','เริ่ม Auto-sync จาก Supabase…');
