@@ -87,6 +87,7 @@ function exportAsHTML(){
     'const fmt='+fmt.toString()+';',
     'const pchCell='+pchCell.toString()+';',
     'const idealText='+idealText.toString()+';',
+    'const barCell='+barCell.toString()+';',
     'const thC='+thC.toString()+';',
     'const chTh='+chTh.toString()+';',
     'function stat(val,lbl,accent){accent=accent||(S&&S.color)||"#004EE6";return`<div class="stat" style="border-left-color:${accent}"><div class="stat-val">${val}</div><div class="stat-lbl">${lbl}</div></div>`;}',

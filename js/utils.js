@@ -118,5 +118,10 @@ function pchCell(v){
 // on that color). The header stays neutral by default; the leading .swatch dot
 // carries the color cue. CSS derives everything else via color-mix — no flood.
 function thC(label,c,fg){const on=fg||idealText(c);return`<th class="th-c" style="--c:${c};--c-on:${on}"><span class="swatch"></span>${label}</th>`;}
+
+// In-cell data bar (length ∝ value/max), rendered as an absolute layer behind
+// the number so the cell's zebra/hover background stays intact. Wrap the <td>
+// with class="barcell".
+function barCell(v,max){const pct=max>0?Math.max(2,Math.round(v/max*100)):0;return`<span class="bar" style="width:${pct}%"></span><span class="num">${fmt(v)}</span>`;}
 function chTh(keys){return keys.map(k=>thC(k,CHART_COLORS[k]||'#555')).join('');}
 function stat(val,lbl,accent='#004EE6'){return`<div class="stat" style="border-left-color:${accent}"><div class="stat-val">${val}</div><div class="stat-lbl">${lbl}</div></div>`;}

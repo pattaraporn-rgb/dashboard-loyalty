@@ -234,8 +234,9 @@ function renderP2(){
     stat(fmt(s.total_active),'สมาชิก ACTIVE รวม')+
     stat(fmt(max),'เดือนสูงสุด: '+(s.months.length&&imax>=0?(ML[s.months[imax]]||s.months[imax]):'–'),'#1a8f3c')+
     stat(fmt(s.months.length?Math.round(chartTotal/s.months.length):0),'เฉลี่ยต่อเดือน','#555');
+  const maxA=Math.max(1,...s.active);
   let r=`<table><tr><th>เดือน</th><th>สมาชิกใหม่ (ACTIVE)</th><th>%Ch</th></tr>`;
-  s.months.forEach((m,i)=>{r+=`<tr><td>${ML[m]||m}</td><td>${fmt(s.active[i])}</td>${pchCell(s.pch[i])}</tr>`;});
+  s.months.forEach((m,i)=>{r+=`<tr><td>${ML[m]||m}</td><td class="barcell">${barCell(s.active[i],maxA)}</td>${pchCell(s.pch[i])}</tr>`;});
   r+=`<tr class="tot"><td>รวม</td><td>${fmt(chartTotal)}</td><td>–</td></tr></table>`;
   document.getElementById('t1').innerHTML=r;
   document.getElementById('n1').innerHTML=`สมาชิกใหม่ (ACTIVE) <b>${fmt(chartTotal)} คน</b> — ไม่รวมเดือนปัจจุบันที่ข้อมูลยังไม่ครบ`;
