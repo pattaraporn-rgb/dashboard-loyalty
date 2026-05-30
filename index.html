@@ -102,7 +102,15 @@ h1{font-size:18px;font-weight:700;margin:2px 0;opacity:.9;}
 /* TABLES */
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04);background:#fff;}
 .tbl-wrap.tbl-narrow{max-width:760px;margin-left:auto;margin-right:auto;}
-table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;}
+/* table-layout:fixed gives every numeric column the same width regardless of
+   how big its digits look. First column (month / reward name) gets an explicit
+   width so it isn't crushed by long channel headers. */
+table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;table-layout:fixed;}
+table th:first-child,table td:first-child{width:130px;}
+.tbl-wrap.tbl-narrow table th:first-child,.tbl-wrap.tbl-narrow table td:first-child{width:160px;}
+/* Reward-pivot table (P5 4.2) — first column holds the reward name which is
+   prose, not a date. Let it stretch more and the rest stay uniform. */
+table.tname th:first-child,table.tname td:first-child{width:220px;}
 th{background:var(--brand);color:#fff;font-weight:700;padding:10px 12px;text-align:right;border:1px solid var(--brand-dark);white-space:nowrap;font-size:11px;letter-spacing:.2px;text-transform:uppercase;}
 th:first-child{text-align:left;text-transform:none;letter-spacing:0;font-size:12px;}
 td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;color:#1A1A1A;}
