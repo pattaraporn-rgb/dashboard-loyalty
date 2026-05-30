@@ -59,10 +59,13 @@ const SUPA_DATE_COLS=new Set([
   'Register date','Last login date','Last activity date','Date of Birth',
   'Date & time','Expire date'
 ]);
-// Supabase column names match Excel column names exactly now, so no aliasing is needed.
-// Keep the object so backupToSheet's `SUPA_ALIASES[c]||[c]` fallback still works;
-// add an entry only if a future Excel file uses a different header for a Supabase column.
-const SUPA_ALIASES={};
+// Excel header → Supabase column, for files whose headers differ in NAME (not just
+// case — findVal already handles case). backupToSheet reads `SUPA_ALIASES[col]||[col]`
+// and tries each alias in order (first match wins).
+const SUPA_ALIASES={
+  // Some CRM exports name the phone column "Phone No" instead of "Tel"
+  'Tel': ['Phone No','Tel','Phone','Phone Number','Mobile','Telephone','เบอร์โทร'],
+};
 
 // ── Global mutable state ──
 let D = null;                                      // computed dashboard data
