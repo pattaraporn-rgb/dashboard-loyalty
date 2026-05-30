@@ -57,6 +57,25 @@ function valueLabel(formatter){
 // Soft grid styling — light enough to not compete with the data
 const softGrid={color:'rgba(0,0,0,0.05)',drawBorder:false};
 
+// Legend click handler that isolates the clicked series (focus mode):
+//   - first click on a series → hide every other series
+//   - click the same series again (now the only visible one) → restore all
+//   - click a different series while solo → switch focus to that series
+// Drop this into chart.options.plugins.legend.onClick.
+function focusLegendClick(e,legendItem,legend){
+  const chart=legend.chart;
+  const target=legendItem.datasetIndex;
+  const n=chart.data.datasets.length;
+  let visible=0;
+  for(let i=0;i<n;i++) if(chart.isDatasetVisible(i)) visible++;
+  const isSolo=visible===1&&chart.isDatasetVisible(target);
+  if(isSolo){
+    for(let i=0;i<n;i++) chart.show(i);
+  } else {
+    for(let i=0;i<n;i++){ if(i===target) chart.show(i); else chart.hide(i); }
+  }
+}
+
 // ── Chart lifecycle ──
 function destroyCharts(ids){ids.forEach(id=>{if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}});}
 function mkChart(id, config){destroyCharts([id]);chartInstances[id]=new Chart(document.getElementById(id),config);return chartInstances[id];}
@@ -275,7 +294,8 @@ function renderP3(){
     options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24}},
       interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{position:'top',align:'end',labels:{padding:14,boxWidth:14,boxHeight:14,usePointStyle:false}},
+        legend:{position:'top',align:'end',onClick:focusLegendClick,
+          labels:{padding:14,boxWidth:14,boxHeight:14,usePointStyle:false}},
         // Tooltip groups all channels for the hovered month and adds a footer with the total
         tooltip:{
           callbacks:{

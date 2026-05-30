@@ -184,6 +184,12 @@ function exportAsHTML(){
     destroyCharts.toString(),
     mkChart.toString(),
     setPanelContent.toString(),
+    // Chart-config helpers that renderP2-P5 reference. Without these the
+    // exported snapshot throws ReferenceError when a panel mounts.
+    'const softGrid='+JSON.stringify(softGrid)+';',
+    topOfStackLabel.toString(),
+    valueLabel.toString(),
+    focusLegendClick.toString(),
     buildRewardPivot.toString(),
     renderP2.toString(),
     renderP3.toString(),
@@ -218,7 +224,7 @@ function exportAsHTML(){
   <div class="sh"><span class="snum">2</span><span class="stitle">Sales Report</span><span class="sen">ยอดขาย (THB) แยกตามช่องทาง</span></div>
   <div class="desc">ยอดขาย (บาท) จาก Point Report เฉพาะ Point type = <b>GIVEN</b></div>
   <div id="p3_empty" class="empty-state" style="display:none"><div class="es-icon"><i data-lucide="circle-dollar-sign"></i></div><h3>ไม่มีข้อมูล</h3></div>
-  <div id="p3_content" style="display:none"><div class="stat-row" id="kpi3"></div><div class="chart-hint"><i data-lucide="info"></i> คลิกที่ชื่อช่องทางในแถบด้านบนเพื่อซ่อน/แสดง • เลื่อนซ้าย-ขวาเพื่อดูเดือนเพิ่ม</div><div class="chartbox scroll"><div class="chart-scroll-inner"><canvas id="c3"></canvas></div></div><div class="tbl-wrap"><div id="t3"></div></div></div>
+  <div id="p3_content" style="display:none"><div class="stat-row" id="kpi3"></div><div class="chart-hint"><i data-lucide="info"></i> คลิกที่ชื่อช่องทางเพื่อโฟกัสเฉพาะอันนั้น (คลิกซ้ำเพื่อแสดงทั้งหมด) • เลื่อนซ้าย-ขวาเพื่อดูเดือนเพิ่ม</div><div class="chartbox scroll"><div class="chart-scroll-inner"><canvas id="c3"></canvas></div></div><div class="tbl-wrap"><div id="t3"></div></div></div>
 </div></div>
 <!-- PANEL 3: POINTS -->
 <div class="panel" id="p4">
