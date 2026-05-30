@@ -22,6 +22,19 @@ function lightenColor(hex, t){
   return '#'+[lr,lg,lb].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 
+// Pick a readable text color (black/white) for any background hex using
+// WCAG relative luminance. Computed once at render-time and injected as a
+// CSS var, so a user-picked brand hex never leaves text unreadable.
+function idealText(hex){
+  const h=(hex||'').replace('#','');
+  const f=h.length===3?h.split('').map(x=>x+x).join(''):h;
+  if(f.length<6) return '#fff';
+  const ch=i=>parseInt(f.substr(i,2),16)/255;
+  const lin=v=>v<=0.03928?v/12.92:((v+0.055)/1.055)**2.4;
+  const L=0.2126*lin(ch(0))+0.7152*lin(ch(2))+0.0722*lin(ch(4));
+  return L>0.45?'#1A1A1A':'#ffffff';
+}
+
 // ── Column lookup (case-insensitive, underscore→space) ──
 function findVal(row, keys){
   const rowKeys = Object.keys(row);
@@ -101,6 +114,9 @@ function pchCell(v){
   const p=v*100,cls=p>0.05?'up':(p<-0.05?'down':'flat'),ar=p>0.05?'▲':(p<-0.05?'▼':'–');
   return`<td class="${cls}">${ar} ${p>0?'+':''}${p.toFixed(1)}%</td>`;
 }
-function thC(label,bg,fg='#fff'){return`<th style="background:${bg};color:${fg};border-color:${bg}">${label}</th>`;}
+// Inject the raw hex into CSS vars (--c = series color, --c-on = readable text
+// on that color). The header stays neutral by default; the leading .swatch dot
+// carries the color cue. CSS derives everything else via color-mix — no flood.
+function thC(label,c,fg){const on=fg||idealText(c);return`<th class="th-c" style="--c:${c};--c-on:${on}"><span class="swatch"></span>${label}</th>`;}
 function chTh(keys){return keys.map(k=>thC(k,CHART_COLORS[k]||'#555')).join('');}
 function stat(val,lbl,accent='#004EE6'){return`<div class="stat" style="border-left-color:${accent}"><div class="stat-val">${val}</div><div class="stat-lbl">${lbl}</div></div>`;}
