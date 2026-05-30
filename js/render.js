@@ -388,11 +388,17 @@ function renderP4(){
     }
   });
   const wpTotal=b.totals['Welcome Point']||0;
-  document.getElementById('kpi4').innerHTML=
-    stat(fmt(a.grand),'คะแนน 3.1 (ช่องทาง)','#5a3a00')+
-    stat(fmt(b.grand),'คะแนน 3.2 (ทุกแหล่ง)','#333')+
-    stat(fmt(wpTotal),'Welcome Point','#C8102E')+
-    stat(b.grand>0?(wpTotal/b.grand*100).toFixed(0)+'%':'–','% Welcome/รวม','#888');
+  // Hero = total points across all sources (3.2). The three sub-cards keep the
+  // channel-only subtotal (3.1), Welcome-Point subset, and Welcome ratio so
+  // marketing can see "how much did we spend, where did it come from, how
+  // much is acquisition cost" at a glance.
+  const heroP4=`<div class="kpi-hero"><div class="kpi-hero-lab">คะแนนแจกรวมทุกแหล่ง (3.2)</div><div class="kpi-hero-val">${fmt(b.grand)}<span class="kpi-hero-unit">แต้ม</span></div></div>`;
+  const subP4='<div class="stat-row">'+
+    `<div class="stat" style="border-left-color:#5a3a00"><div class="stat-val">${fmt(a.grand)}</div><div class="stat-lbl">คะแนน 3.1 (เฉพาะช่องทาง)</div></div>`+
+    `<div class="stat" style="border-left-color:#C8102E"><div class="stat-val">${fmt(wpTotal)}</div><div class="stat-lbl">Welcome Point</div></div>`+
+    `<div class="stat" style="border-left-color:#888"><div class="stat-val">${b.grand>0?(wpTotal/b.grand*100).toFixed(0)+'%':'–'}</div><div class="stat-lbl">% Welcome / รวม</div></div>`+
+  '</div>';
+  document.getElementById('kpi4').innerHTML=heroP4+subP4;
   // ตาราง 3.1 เรียงจากเก่าไปใหม่ (ascending)
   let r4a=`<table><tr><th>เดือน</th>${chTh(aKeys)}<th>รวม</th><th>%Ch</th></tr>`;
   a.months.forEach((m,i)=>{r4a+=`<tr><td>${ML[m]||m}</td>${aKeys.map(k=>'<td>'+fmt(a.data[k][i])+'</td>').join('')}<td><b>${fmt(a.total[i])}</b></td>${pchCell(a.pch[i])}</tr>`;});
@@ -465,11 +471,17 @@ function renderP5(){
       scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:softGrid,ticks:{callback:v=>fmt(v)}}}
     }
   });
-  document.getElementById('kpi5').innerHTML=
-    stat(fmt(s.total_count),'การแลกทั้งหมด','#7B1E26')+
-    stat(fmt(s.total_pts),'คะแนนที่ใช้แลก (Redemption)','#7B1E26')+
-    stat(fmt(totalUsed),'Used Points (REDEEMED)','#C8102E')+
-    stat(totalGive>0?(totalUsed/totalGive*100).toFixed(1)+'%':'–','Used/Give Rate','#3A4DA0');
+  // Hero = total redemption count (the engagement headline). Sub-cards keep
+  // the points spent + Used-Points-from-point_report + Used/Give ratio so the
+  // marketing team can see "how many redemptions, how many points it cost,
+  // is the program working?" without scrolling to the table.
+  const heroP5=`<div class="kpi-hero"><div class="kpi-hero-lab">การแลกของรางวัลทั้งหมด</div><div class="kpi-hero-val">${fmt(s.total_count)}<span class="kpi-hero-unit">ครั้ง</span></div></div>`;
+  const subP5='<div class="stat-row">'+
+    `<div class="stat" style="border-left-color:#7B1E26"><div class="stat-val">${fmt(s.total_pts)}</div><div class="stat-lbl">คะแนนที่ใช้แลก (Redemption)</div></div>`+
+    `<div class="stat" style="border-left-color:#C8102E"><div class="stat-val">${fmt(totalUsed)}</div><div class="stat-lbl">Used Points (REDEEMED)</div></div>`+
+    `<div class="stat" style="border-left-color:#3A4DA0"><div class="stat-val">${totalGive>0?(totalUsed/totalGive*100).toFixed(1)+'%':'–'}</div><div class="stat-lbl">Used / Give Rate</div></div>`+
+  '</div>';
+  document.getElementById('kpi5').innerHTML=heroP5+subP5;
 
   // ตารางหลัก เรียงจากเก่าไปใหม่ (ascending)
   let r5=`<table><tr><th>เดือน</th>${thC('Give Points','#3A4DA0')}${thC('Used Points','#7B1E26')}<th>%Ch</th>${thC('จำนวนที่แลก','#1A1A1A')}<th>%Ch</th>${thC('Used/Give %','#004EE6')}</tr>`;

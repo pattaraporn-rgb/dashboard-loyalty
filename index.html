@@ -97,6 +97,7 @@ h1{font-size:18px;font-weight:700;margin:2px 0;opacity:.9;}
 .kpi-hero:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06);}
 .kpi-hero-lab{font-size:11px;color:var(--mut);font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
 .kpi-hero-val{font-size:36px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:-0.5px;}
+.kpi-hero-unit{font-size:18px;color:var(--mut);font-weight:600;margin-left:6px;letter-spacing:0;}
 
 /* TABLES */
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04);background:#fff;}
@@ -656,7 +657,7 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
     <button class="btn btn-primary" onclick="switchTab(1)">ไปที่ Database →</button>
   </div>
   <div id="p4_content" style="display:none">
-    <div class="stat-row" id="kpi4"></div>
+    <div class="kpi-summary" id="kpi4"></div>
     <div class="subhd">3.1 · คะแนนตามช่องทาง</div>
     <div class="desc">คะแนนที่แจก (GIVEN) แยกตามช่องทาง — ไม่รวม Welcome Point</div>
     <div class="chartbox sm"><canvas id="c4a"></canvas></div>
@@ -682,7 +683,7 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
     <button class="btn btn-primary" onclick="switchTab(1)">ไปที่ Database →</button>
   </div>
   <div id="p5_content" style="display:none">
-    <div class="stat-row" id="kpi5"></div>
+    <div class="kpi-summary" id="kpi5"></div>
     <div class="grid2">
       <div class="chartbox sm"><canvas id="c5a"></canvas></div>
       <div class="chartbox sm"><canvas id="c5b"></canvas></div>
