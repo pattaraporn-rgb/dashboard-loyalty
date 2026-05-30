@@ -7,9 +7,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   initColorPresets();
   loadSettings();
   loadStoredData();
-  loadApiUrl();
   updateDbSummary();
-  updateCrudSection();
   document.getElementById('footerYear').textContent = new Date().getFullYear();
   refreshIcons();
   // Auto-sync from Supabase on load

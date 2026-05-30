@@ -261,13 +261,13 @@ function renderP2(){
         <div class="inactive-label with-icon"><i data-lucide="help-circle" class="icon-sm"></i> ไม่มีข้อมูล Last Activity</div>
         <div class="inactive-count">${fmt(blankCount)}</div>
         <div class="inactive-sub">คน — ไม่เคยมีประวัติการเข้าระบบ${!ia.hasColumn?' (ไม่พบคอลัมน์ในไฟล์)':''}</div>
-        ${ia.blank.length>0?`<button class="inactive-export" onclick="exportInactiveMembers('blank')"><i data-lucide="download" class="icon-sm"></i> Export รายชื่อ (${fmt(ia.blank.length)} คน) .csv</button>`:''}
+        ${typeof exportInactiveMembers==='function'&&ia.blank.length>0?`<button class="inactive-export" onclick="exportInactiveMembers('blank')"><i data-lucide="download" class="icon-sm"></i> Export รายชื่อ (${fmt(ia.blank.length)} คน) .csv</button>`:''}
       </div>
       <div class="inactive-card overdue">
         <div class="inactive-label with-icon"><i data-lucide="alarm-clock" class="icon-sm"></i> ไม่ได้เข้าระบบ &gt;3 เดือน (ก่อน ${cutoffLabel})</div>
         <div class="inactive-count">${fmt(ia.overdueCount)}</div>
         <div class="inactive-sub">คน — Last Activity Date ก่อน ${cutoffLabel}<br>อาจเป็นลูกค้าที่หลุดออกจากระบบ</div>
-        ${ia.overdueCount>0?`<button class="inactive-export" onclick="exportInactiveMembers('overdue')"><i data-lucide="download" class="icon-sm"></i> Export รายชื่อ (${fmt(ia.overdueCount)} คน) .csv</button>`:''}
+        ${typeof exportInactiveMembers==='function'&&ia.overdueCount>0?`<button class="inactive-export" onclick="exportInactiveMembers('overdue')"><i data-lucide="download" class="icon-sm"></i> Export รายชื่อ (${fmt(ia.overdueCount)} คน) .csv</button>`:''}
       </div>
     </div>
   </div>`;

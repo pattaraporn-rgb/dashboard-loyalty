@@ -29,104 +29,6 @@ function downloadTemplate(slot){
   XLSX.writeFile(wb,t.name);
 }
 
-function copyGasCode(){
-  const code=`// ════ Google Apps Script — Loyalty Dashboard v2 (Read + Write + Backup) ════
-// 1. เปิด Google Sheet → Extensions → Apps Script
-// 2. วาง code ทั้งหมด → Run "setupSheets" ครั้งแรก → สร้าง Sheets อัตโนมัติ
-// 3. Deploy → New Deployment → Web App → Execute as: Me, Access: Anyone → Copy URL
-// 4. ทุกครั้งที่แก้ code ต้อง Deploy version ใหม่เพื่ออัปเดต
-
-const SHEET_HEADERS = {
-  "contacts":     ["Name","Status","Register Date","Phone No","Gender","Tier","Points balance"],
-  "Point Report": ["Date & time","Member name","Member tel","Point type","Points collected","Sale amount (THB)","Source","Channel","Sub channel"],
-  "Redemptions":  ["Date & time","Reward name","Reward code","Points used","Member name","Member tel"]
-};
-
-function setupSheets() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  Object.entries(SHEET_HEADERS).forEach(([name, headers]) => {
-    let sh = ss.getSheetByName(name);
-    if (!sh) { sh = ss.insertSheet(name); }
-    if (sh.getLastRow() === 0) {
-      sh.appendRow(headers);
-      sh.getRange(1,1,1,headers.length).setFontWeight("bold").setBackground("#004EE6").setFontColor("#ffffff");
-      sh.setFrozenRows(1);
-    }
-  });
-  SpreadsheetApp.getUi().alert("✅ สร้าง Sheets สำเร็จ!");
-}
-
-// GET: read data only
-function doGet(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  return jsonOut({
-    contacts:    getData(ss, "contacts"),
-    pointReport: getData(ss, "Point Report"),
-    redemptions: getData(ss, "Redemptions"),
-    exportedAt:  new Date().toISOString()
-  });
-}
-
-// POST: batch replace / insert / delete — ข้อมูลส่งใน request body (ไม่ใช่ URL)
-function doPost(e) {
-  try {
-    const body = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    if (body.action === "batch_replace") {
-      const sh = ss.getSheetByName(body.sheet);
-      if (!sh) return jsonOut({success:false, error:"Sheet not found: " + body.sheet});
-      const rows = body.rows || [];
-      sh.clearContents();
-      if (rows.length === 0) return jsonOut({success:true, inserted:0});
-      const headers = Object.keys(rows[0]);
-      const values = [headers, ...rows.map(r => headers.map(h => r[h] !== undefined ? String(r[h]) : ""))];
-      sh.getRange(1, 1, values.length, headers.length).setValues(values);
-      sh.getRange(1,1,1,headers.length).setFontWeight("bold").setBackground("#004EE6").setFontColor("#ffffff");
-      sh.setFrozenRows(1);
-      return jsonOut({success:true, inserted:rows.length, sheet:body.sheet});
-    }
-    if (body.action === "insert") {
-      const sh = ss.getSheetByName(body.sheet);
-      if (!sh) return jsonOut({success:false, error:"Sheet not found"});
-      const data = body.data || {};
-      const headers = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
-      sh.appendRow(headers.map(h => data[h] !== undefined ? data[h] : ""));
-      return jsonOut({success:true, insertedAt:new Date().toISOString()});
-    }
-    if (body.action === "delete") {
-      const sh = ss.getSheetByName(body.sheet);
-      if (!sh) return jsonOut({success:false, error:"Sheet not found"});
-      sh.deleteRow(parseInt(body.rowId) + 2);
-      return jsonOut({success:true});
-    }
-  } catch(err) {
-    return jsonOut({success:false, error:err.message});
-  }
-  return jsonOut({error:"Unknown action"});
-}
-
-function getData(ss, sheetName) {
-  const sh = ss.getSheetByName(sheetName);
-  if (!sh || sh.getLastRow() < 2) return [];
-  const rows = sh.getDataRange().getValues();
-  const headers = rows[0];
-  return rows.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h,i) => { if(h) obj[h] = row[i]; });
-    return obj;
-  }).filter(r => Object.values(r).some(v => v !== ""));
-}
-
-function jsonOut(data) {
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-}`;
-  navigator.clipboard.writeText(code).then(()=>{
-    const btn=event.target;
-    btn.textContent='คัดลอกแล้ว';
-    setTimeout(()=>{btn.innerHTML='<i data-lucide="clipboard" class="icon-sm"></i> คัดลอก';refreshIcons();},2000);
-  });
-}
-
 // ════════════════════════════════════════════════════════════════
 // EXPORT AS HTML — Full Dashboard Snapshot (self-contained file)
 // ════════════════════════════════════════════════════════════════
@@ -162,9 +64,15 @@ function exportAsHTML(){
   ].map(k=>`<div class="kpi"><div class="lab">${k[1]}</div><div class="val">${k[0]}</div><div class="unit">${k[2]}</div></div>`).join('');
   const drLabel=sett.dateRange?'ข้อมูล '+sett.dateRange:(D.s3&&D.s3.months.length?`ข้อมูล ${ML[D.s3.months[0]]||D.s3.months[0]} – ${ML[D.s3.months[D.s3.months.length-1]]||D.s3.months[D.s3.months.length-1]}`:'');
 
+  // Clone D for embedding; strip inactive PII arrays (blank/overdue hold names+phones).
+  // The exported inactive section shows counts only — no CSV buttons — so the raw
+  // member rows are not needed and must not ship inside the shareable HTML file.
+  const Dx=JSON.parse(JSON.stringify(D));
+  if(Dx.s1&&Dx.s1.inactive){Dx.s1.inactive.blank=[];Dx.s1.inactive.overdue=[];}
+
   // Embed all data + render functions as script
   const embJS=[
-    'const D='+JSON.stringify(D).replace(/<\/script>/gi,'<\\/script>')+';',
+    'const D='+JSON.stringify(Dx).replace(/<\/script>/gi,'<\\/script>')+';',
     'const S='+JSON.stringify(sett)+';',
     'const CHART_COLORS='+JSON.stringify(CHART_COLORS)+';',
     'const CH_KEYS='+JSON.stringify(CH_KEYS)+';',
@@ -216,7 +124,7 @@ function exportAsHTML(){
   <div class="sh"><span class="snum">1</span><span class="stitle">New User Registration</span><span class="sen">ผู้ใช้รายใหม่ (ACTIVE)</span></div>
   <div class="desc">จำนวนผู้ใช้ใหม่สถานะ <b>ACTIVE</b> จัดกลุ่มตาม Register Date — ไม่รวมเดือนปัจจุบันที่ข้อมูลยังไม่ครบ</div>
   <div id="p2_empty" class="empty-state" style="display:none"><div class="es-icon"><i data-lucide="users"></i></div><h3>ไม่มีข้อมูล</h3></div>
-  <div id="p2_content" style="display:none"><div class="stat-row" id="kpi1"></div><div class="chartbox"><canvas id="c1"></canvas></div><div class="tbl-wrap tbl-narrow"><div id="t1"></div></div><div class="note" id="n1"></div></div>
+  <div id="p2_content" style="display:none"><div class="stat-row" id="kpi1"></div><div class="chartbox"><canvas id="c1"></canvas></div><div class="tbl-wrap tbl-narrow"><div id="t1"></div></div><div class="note" id="n1"></div><div id="inactiveSection" style="margin-top:20px"></div></div>
 </div></div>
 <!-- PANEL 2: SALES -->
 <div class="panel" id="p3">

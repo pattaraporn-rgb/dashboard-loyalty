@@ -204,16 +204,11 @@ tbody tr.reward-top:hover td{background:var(--brand-light)!important;}
 .col-item .ci-name.optional{background:#888;}
 .col-item .ci-desc{color:#555;}
 .api-card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);border:2px solid var(--line);margin-bottom:16px;}
-.api-url-row{display:flex;gap:10px;align-items:stretch;}
-.api-url-row .form-input{flex:1;font-size:12px;}
 .sync-log{font-size:11.5px;background:#0f1124;color:#cfd2e6;border-radius:10px;padding:12px 14px;margin-top:10px;line-height:1.85;max-height:140px;overflow-y:auto;font-family:'SF Mono',Consolas,Menlo,monospace;border:1px solid #1e2240;}
 .sync-log .log-ok{color:#5fd682;}
 .sync-log .log-err{color:#ff7a7a;}
 .sync-log .log-warn{color:#ffc857;}
 .sync-log .log-info{color:#a8b0cf;}
-.clear-card{background:#fff7f7;border-radius:14px;padding:22px;border:1px solid #fbd5d0;}
-.clear-card h3{color:var(--err);font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-.clear-card p{font-size:12.5px;color:#555;margin-bottom:14px;line-height:1.65;}
 .db-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
 .db-sum-card{background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04);border:1px solid var(--line);border-top:3px solid var(--line);transition:transform 180ms ease,box-shadow 180ms ease;}
 .db-sum-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.05);}
@@ -245,22 +240,7 @@ tbody tr.reward-top:hover td{background:var(--brand-light)!important;}
 .modal h2 [data-lucide]{color:var(--brand);width:22px;height:22px;}
 .modal-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end;}
 
-/* SCRIPT INFO */
-.script-box{background:#1a1a2e;border-radius:10px;padding:16px;font-family:monospace;font-size:11px;color:#7ec8e3;line-height:1.8;overflow-x:auto;margin:10px 0;}
-.script-box .c-comment{color:#6a9955;}
-.script-box .c-key{color:#dcdcaa;}
-.script-box .c-str{color:#ce9178;}
-.copy-btn{font-size:10.5px;background:var(--brand);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;float:right;margin-top:-4px;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:background-color 180ms ease;}
-.copy-btn:hover{background:var(--brand-dark);}
-
 footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#666;line-height:1.8;}
-/* CRUD section */
-.crud-card{background:var(--card);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04);border:1px solid var(--line);border-top:3px solid var(--ok);margin-bottom:16px;}
-.crud-card .snum{background:var(--ok);}
-.crud-log{font-size:11.5px;background:#0f1124;color:#cfd2e6;border-radius:10px;padding:12px 14px;margin-top:10px;line-height:1.85;max-height:80px;overflow-y:auto;font-family:'SF Mono',Consolas,Menlo,monospace;border:1px solid #1e2240;}
-.crud-log .log-ok{color:#5fd682;}
-.crud-log .log-err{color:#ff7a7a;}
-.crud-log .log-info{color:#a8b0cf;}
 /* DATA QUALITY */
 .qa-section{background:var(--card);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04);border:1px solid var(--line);margin-bottom:16px;}
 .qa-title{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
@@ -416,8 +396,8 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
     <div class="desc">
       <b>Loyalty Dashboard Pro</b> เป็น prototype ที่อ่านข้อมูลจาก Excel ไฟล์โดยตรงในเบราว์เซอร์ ไม่ต้องมี server<br><br>
       <b>ไฟล์ที่ต้องการ:</b> contacts (.xlsx) · Point Report List (.xlsx) · Redemptions Details (.xlsx) — export จาก Rocket Loyalty CRM<br><br>
-      <b>Google Apps Script Sync:</b> ตั้งค่า URL ใน Database Tab เพื่อ sync ข้อมูลอัตโนมัติจาก Google Sheets<br><br>
-      <b>ข้อมูลถูกเก็บใน localStorage</b> ของเบราว์เซอร์ — ไม่ส่งออกไปที่ใด อัปโหลดครั้งเดียวเปิดดูได้เรื่อยๆ
+      <b>Supabase Sync:</b> ข้อมูลถูก backup ขึ้น Supabase อัตโนมัติเมื่ออัปโหลด และ Sync กลับมาเองทุกครั้งที่เปิดหน้านี้<br><br>
+      <b>ข้อมูลถูกเก็บใน localStorage</b> ของเบราว์เซอร์ด้วย — อัปโหลดครั้งเดียวเปิดดูได้เรื่อยๆ
     </div>
   </div>
 </div>
@@ -533,95 +513,14 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
     </div>
   </div>
 
-  <!-- Google Apps Script Sync -->
+  <!-- Supabase Sync -->
   <div class="api-card">
-    <div class="sh" style="margin-bottom:14px;"><span class="snum"><i data-lucide="link-2"></i></span><span class="stitle">Google Apps Script Sync</span><span class="sen">sync ข้อมูลอัตโนมัติจาก Google Sheets</span></div>
-    <div class="desc">ถ้ามี Google Sheet ที่ sync กับ Rocket Loyalty แล้ว ให้ Deploy Apps Script เป็น Web App และวาง URL ด้านล่าง — กด Sync เพื่อดึงข้อมูลทั้งหมดในคลิกเดียว</div>
-    <div class="api-url-row">
-      <input type="text" id="apiUrlInput" class="form-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" style="font-size:12px;">
-      <button class="btn btn-secondary" onclick="saveApiUrl()"><i data-lucide="save" class="icon-sm"></i> บันทึก URL</button>
-      <button class="btn btn-primary" onclick="syncFromApi()"><i data-lucide="zap" class="icon-sm"></i> Sync Now</button>
+    <div class="sh" style="margin-bottom:14px;"><span class="snum"><i data-lucide="database"></i></span><span class="stitle">Supabase Sync</span><span class="sen">โหลด / สำรองข้อมูลกับ Supabase</span></div>
+    <div class="desc">ข้อมูลเก็บบน Supabase — เปิดหน้านี้จะ Sync อัตโนมัติ และทุกครั้งที่อัปโหลด Excel ระบบจะ backup ขึ้น Supabase ให้เอง · กด <b>Sync Now</b> เพื่อดึงข้อมูลล่าสุดมาแสดงอีกครั้ง</div>
+    <div style="margin-bottom:4px;">
+      <button class="btn btn-primary" onclick="syncFromApi()"><i data-lucide="refresh-cw" class="icon-sm"></i> Sync Now</button>
     </div>
-    <div class="sync-log" id="syncLog"><span class="log-info">พร้อมสำหรับ sync — กรอก URL แล้วกด Sync Now</span></div>
-
-    <!-- Apps Script template -->
-    <details style="margin-top:14px;">
-      <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--brand);padding:6px 0;"><i data-lucide="scroll-text" class="icon-sm"></i> ดู Google Apps Script Template v2 — รองรับ CRUD (คัดลอกไปใช้ได้เลย)</summary>
-      <div class="script-box" id="gasTemplate">
-<span class="c-comment">// ════ Google Apps Script — Loyalty Dashboard v2 (Read + Write) ════</span>
-<span class="c-comment">// 1. เปิด Google Sheet → Extensions → Apps Script</span>
-<span class="c-comment">// 2. วาง code ทั้งหมด → Run "setupSheets" ครั้งแรก → สร้าง Sheets อัตโนมัติ</span>
-<span class="c-comment">// 3. Deploy → New Deployment → Web App → Execute as: Me, Access: Anyone → Copy URL</span>
-<span class="c-comment">// 4. ทุกครั้งที่แก้ code ต้อง Deploy version ใหม่เพื่ออัปเดต</span>
-
-<span class="c-key">const</span> SHEET_HEADERS = {
-  <span class="c-str">"contacts"</span>:     [<span class="c-str">"Name"</span>,<span class="c-str">"Status"</span>,<span class="c-str">"Register Date"</span>,<span class="c-str">"Phone No"</span>,<span class="c-str">"Gender"</span>,<span class="c-str">"Tier"</span>,<span class="c-str">"Points balance"</span>],
-  <span class="c-str">"Point Report"</span>:  [<span class="c-str">"Date & time"</span>,<span class="c-str">"Member name"</span>,<span class="c-str">"Member tel"</span>,<span class="c-str">"Point type"</span>,<span class="c-str">"Points collected"</span>,<span class="c-str">"Sale amount (THB)"</span>,<span class="c-str">"Source"</span>,<span class="c-str">"Channel"</span>,<span class="c-str">"Sub channel"</span>],
-  <span class="c-str">"Redemptions"</span>:   [<span class="c-str">"Date & time"</span>,<span class="c-str">"Reward name"</span>,<span class="c-str">"Reward code"</span>,<span class="c-str">"Points used"</span>,<span class="c-str">"Member name"</span>,<span class="c-str">"Member tel"</span>]
-};
-
-<span class="c-key">function</span> setupSheets() {
-  <span class="c-key">const</span> ss = SpreadsheetApp.getActiveSpreadsheet();
-  Object.entries(SHEET_HEADERS).forEach(([name, headers]) => {
-    <span class="c-key">let</span> sh = ss.getSheetByName(name);
-    <span class="c-key">if</span> (!sh) { sh = ss.insertSheet(name); }
-    <span class="c-key">if</span> (sh.getLastRow() === 0) {
-      sh.appendRow(headers);
-      sh.getRange(1,1,1,headers.length).setFontWeight(<span class="c-str">"bold"</span>).setBackground(<span class="c-str">"#004EE6"</span>).setFontColor(<span class="c-str">"#ffffff"</span>);
-      sh.setFrozenRows(1);
-    }
-  });
-  SpreadsheetApp.getUi().alert(<span class="c-str">"✅ สร้าง Sheets สำเร็จ!"</span>);
-}
-
-<span class="c-comment">// GET: read data only — insert/delete ย้ายไปที่ doPost แล้ว (ข้อมูลไม่รั่วใน URL)</span>
-<span class="c-key">function</span> doGet(e) {
-  <span class="c-key">const</span> ss = SpreadsheetApp.getActiveSpreadsheet();
-  <span class="c-key">return</span> jsonOut({
-    contacts:    getData(ss, <span class="c-str">"contacts"</span>),
-    pointReport: getData(ss, <span class="c-str">"Point Report"</span>),
-    redemptions: getData(ss, <span class="c-str">"Redemptions"</span>),
-    exportedAt:  <span class="c-key">new</span> Date().toISOString()
-  });
-}
-
-<span class="c-key">function</span> getData(ss, sheetName) {
-  <span class="c-key">const</span> sh = ss.getSheetByName(sheetName);
-  <span class="c-key">if</span> (!sh || sh.getLastRow() < 2) <span class="c-key">return</span> [];
-  <span class="c-key">const</span> rows = sh.getDataRange().getValues();
-  <span class="c-key">const</span> headers = rows[0];
-  <span class="c-key">return</span> rows.slice(1).map(row => {
-    <span class="c-key">const</span> obj = {};
-    headers.forEach((h,i) => { <span class="c-key">if</span>(h) obj[h] = row[i]; });
-    <span class="c-key">return</span> obj;
-  }).filter(r => Object.values(r).some(v => v !== <span class="c-str">""</span>));
-}
-
-<span class="c-key">function</span> jsonOut(data) {
-  <span class="c-key">return</span> ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-}
-      </div>
-      <button class="copy-btn" onclick="copyGasCode()" style="margin-top:-30px;position:relative;z-index:1;"><i data-lucide="clipboard" class="icon-sm"></i> คัดลอก</button>
-    </details>
-  </div>
-
-  <!-- CRUD: Write to Google Sheets -->
-  <div class="crud-card" id="crudSection" style="display:none;">
-    <div class="sh" style="margin-bottom:14px;"><span class="snum"><i data-lucide="pencil"></i></span><span class="stitle">เพิ่ม / ลบข้อมูลใน Sheets</span><span class="sen">เขียนตรงจาก Dashboard</span></div>
-    <div class="desc">เพิ่มข้อมูลใหม่เข้า Google Sheets โดยตรง — ข้อมูลจะปรากฏใน Sheet ทันที แล้ว Dashboard จะ Sync อัตโนมัติ<br>ต้อง Deploy Apps Script Template v2 ข้างต้นก่อน</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-      <button class="btn btn-primary" onclick="openAddModal('contact')"><i data-lucide="user-plus" class="icon-sm"></i> เพิ่มสมาชิก</button>
-      <button class="btn btn-primary" onclick="openAddModal('point')"><i data-lucide="plus-circle" class="icon-sm"></i> เพิ่ม Transaction</button>
-      <button class="btn btn-primary" onclick="openAddModal('redemption')"><i data-lucide="plus-circle" class="icon-sm"></i> เพิ่มการแลก</button>
-    </div>
-    <div class="crud-log" id="crudLog" style="display:none;"></div>
-  </div>
-
-  <!-- Clear Data -->
-  <div class="clear-card">
-    <h3 class="with-icon"><i data-lucide="alert-triangle"></i> ล้างข้อมูลทั้งหมด</h3>
-    <p>ลบข้อมูลทั้งหมดที่อัปโหลดไว้ — เหมาะสำหรับเปลี่ยนร้านค้าใหม่ หรือเริ่มต้นใหม่<br>การตั้งค่าร้านค้า (ชื่อ สี โลโก้) จะ<b>ไม่ถูกลบ</b> ต้องล้างแยกในหน้าตั้งค่า</p>
-    <button class="btn btn-danger" onclick="showClearModal()"><i data-lucide="trash-2" class="icon-sm"></i> ล้างข้อมูล Excel ทั้งหมด</button>
+    <div class="sync-log" id="syncLog"><span class="log-info">พร้อม Sync จาก Supabase</span></div>
   </div>
 </div>
 
@@ -718,83 +617,15 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
 
 </div><!-- /content -->
 
-<!-- ADD CONTACT MODAL -->
-<div class="modal-overlay" id="addContactModal">
-  <div class="modal" style="max-width:500px;">
-    <h2 class="with-icon"><i data-lucide="user-plus"></i> เพิ่มสมาชิกใหม่</h2>
-    <div class="form-group"><div class="form-label">ชื่อสมาชิก</div><input type="text" class="form-input" id="ci_name" placeholder="ชื่อ-นามสกุล"></div>
-    <div class="form-group"><div class="form-label">Status</div>
-      <select class="form-input" id="ci_status"><option value="ACTIVE">ACTIVE</option><option value="INACTIVE">INACTIVE</option></select></div>
-    <div class="form-group"><div class="form-label">Register Date</div><input type="date" class="form-input" id="ci_regdate"></div>
-    <div class="form-group"><div class="form-label">Phone No</div><input type="text" class="form-input" id="ci_phone" placeholder="0812345678"></div>
-    <div class="form-group"><div class="form-label">Gender</div>
-      <select class="form-input" id="ci_gender"><option value="">ไม่ระบุ</option><option value="M">M (ชาย)</option><option value="F">F (หญิง)</option></select></div>
-    <div class="form-group"><div class="form-label">Tier</div><input type="text" class="form-input" id="ci_tier" placeholder="Bronze / Silver / Gold"></div>
-    <div class="form-group"><div class="form-label">Points balance</div><input type="number" class="form-input" id="ci_pts" value="0"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeAddModal('contact')">ยกเลิก</button>
-      <button class="btn btn-primary" id="submitContactBtn" onclick="submitAdd('contact')"><i data-lucide="save" class="icon-sm"></i> บันทึกลง Sheets</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD POINT TRANSACTION MODAL -->
-<div class="modal-overlay" id="addPointModal">
-  <div class="modal" style="max-width:500px;">
-    <h2 class="with-icon"><i data-lucide="star"></i> เพิ่ม Point Transaction</h2>
-    <div class="form-group"><div class="form-label">Date &amp; time</div><input type="datetime-local" class="form-input" id="pi_dt"></div>
-    <div class="form-group"><div class="form-label">Member name</div><input type="text" class="form-input" id="pi_name" placeholder="ชื่อสมาชิก"></div>
-    <div class="form-group"><div class="form-label">Member tel</div><input type="text" class="form-input" id="pi_tel" placeholder="0812345678"></div>
-    <div class="form-group"><div class="form-label">Point type</div>
-      <select class="form-input" id="pi_type">
-        <option value="GIVEN">GIVEN</option>
-        <option value="REDEEMED">REDEEMED</option>
-        <option value="WELCOME POINT">WELCOME POINT</option>
-        <option value="Invite Friend Collect">Invite Friend Collect</option>
-      </select></div>
-    <div class="form-group"><div class="form-label">Points collected</div><input type="number" class="form-input" id="pi_pts" value="0"></div>
-    <div class="form-group"><div class="form-label">Sale amount (THB)</div><input type="number" class="form-input" id="pi_sale" value="0"></div>
-    <div class="form-group"><div class="form-label">Source</div><input type="text" class="form-input" id="pi_source" placeholder="Third Party / Loyalty Manual / ..."></div>
-    <div class="form-group"><div class="form-label">Channel</div>
-      <select class="form-input" id="pi_channel">
-        <option value="">ไม่ระบุ</option>
-        <option value="TikTok">TikTok</option><option value="Shopee">Shopee</option>
-        <option value="Lazada">Lazada</option><option value="Loyalty Manual">Loyalty Manual</option>
-        <option value="Upload Receipt">Upload Receipt</option>
-      </select></div>
-    <div class="form-group"><div class="form-label">Sub channel <span style="font-weight:400;color:#aaa;">(optional)</span></div><input type="text" class="form-input" id="pi_subchannel" placeholder="ช่องทางย่อย"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeAddModal('point')">ยกเลิก</button>
-      <button class="btn btn-primary" id="submitPointBtn" onclick="submitAdd('point')"><i data-lucide="save" class="icon-sm"></i> บันทึกลง Sheets</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD REDEMPTION MODAL -->
-<div class="modal-overlay" id="addRedemptionModal">
-  <div class="modal" style="max-width:500px;">
-    <h2 class="with-icon"><i data-lucide="gift"></i> เพิ่มการแลกของรางวัล</h2>
-    <div class="form-group"><div class="form-label">Date &amp; time</div><input type="datetime-local" class="form-input" id="ri_dt"></div>
-    <div class="form-group"><div class="form-label">Reward name</div><input type="text" class="form-input" id="ri_reward" placeholder="ชื่อของรางวัล"></div>
-    <div class="form-group"><div class="form-label">Reward code <span style="font-weight:400;color:#aaa;">(optional)</span></div><input type="text" class="form-input" id="ri_code" placeholder="รหัสของรางวัล"></div>
-    <div class="form-group"><div class="form-label">Points used</div><input type="number" class="form-input" id="ri_pts" value="0"></div>
-    <div class="form-group"><div class="form-label">Member name</div><input type="text" class="form-input" id="ri_name" placeholder="ชื่อสมาชิก"></div>
-    <div class="form-group"><div class="form-label">Member tel</div><input type="text" class="form-input" id="ri_tel" placeholder="0812345678"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeAddModal('redemption')">ยกเลิก</button>
-      <button class="btn btn-primary" id="submitRedemptionBtn" onclick="submitAdd('redemption')"><i data-lucide="save" class="icon-sm"></i> บันทึกลง Sheets</button>
-    </div>
-  </div>
-</div>
-
 <!-- CLEAR MODAL -->
 <div class="modal-overlay" id="clearModal">
   <div class="modal">
     <h2 class="with-icon"><i data-lucide="alert-triangle"></i> ยืนยันล้างข้อมูล</h2>
-    <p style="font-size:13px;line-height:1.8;color:#555;">จะล้างข้อมูลทั้งหมดออกจากเบราว์เซอร์:<br>
-    <span style="color:#C8102E;">✕</span> ข้อมูล Contacts · Point Report · Redemptions<br><span style="color:#C8102E;">✕</span> ข้อมูล Dashboard ที่คำนวณไว้<br><br>
-    <span style="color:#1a8f3c;">✓</span> <b>การตั้งค่า (ชื่อ/สี/โลโก้) จะยังอยู่</b><br>
-    <span style="color:#1a8f3c;">✓</span> <b>Google Sheet ไม่ถูกลบ</b> — กด Sync อีกครั้งเพื่อโหลดข้อมูลกลับมา</p>
+    <p style="font-size:13px;line-height:1.8;color:#555;">จะล้างข้อมูลทั้งหมด:<br>
+    <span style="color:#C8102E;">✕</span> ข้อมูล Contacts · Point Report · Redemptions (ในเบราว์เซอร์)<br>
+    <span style="color:#C8102E;">✕</span> ข้อมูล Dashboard ที่คำนวณไว้<br>
+    <span style="color:#C8102E;">✕</span> <b>ข้อมูลบน Supabase จะถูกล้างด้วย</b><br><br>
+    <span style="color:#1a8f3c;">✓</span> <b>การตั้งค่า (ชื่อ/สี/โลโก้) จะยังอยู่</b> — อัปโหลด Excel ใหม่เพื่อเริ่มต้นอีกครั้ง</p>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="hideClearModal()">ยกเลิก</button>
       <button class="btn btn-danger" onclick="clearAllData()"><i data-lucide="trash-2" class="icon-sm"></i> ยืนยันล้างข้อมูล</button>
