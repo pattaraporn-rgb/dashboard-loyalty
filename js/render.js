@@ -342,9 +342,16 @@ function renderP3(){
     }
   });
 
-  document.getElementById('kpi3').innerHTML=
-    stat('฿'+fmt(s.grand),'ยอดขายรวม','#5a3a00')+
-    useKeys.map(k=>stat('฿'+fmt(s.totals[k]),k,CHART_COLORS[k]||'#555')).join('');
+  // Two-row KPI: hero (total) on top, per-channel breakdown with % share below.
+  // % share lets marketing see channel mix at a glance ("Shopee = 58% of revenue")
+  // without doing mental math against the total.
+  const heroCard=`<div class="kpi-hero"><div class="kpi-hero-lab">ยอดขายรวม (THB)</div><div class="kpi-hero-val">฿${fmt(s.grand)}</div></div>`;
+  const channelCards='<div class="stat-row">'+useKeys.map(k=>{
+    const share=s.grand>0?(s.totals[k]/s.grand*100).toFixed(1):'0.0';
+    const color=CHART_COLORS[k]||'#555';
+    return `<div class="stat" style="border-left-color:${color}"><div class="stat-val">฿${fmt(s.totals[k])}</div><div class="stat-lbl">${k}<span class="stat-share">${share}%</span></div></div>`;
+  }).join('')+'</div>';
+  document.getElementById('kpi3').innerHTML=heroCard+channelCards;
 
   let r=`<table><tr><th>เดือน</th>${chTh(useKeys)}<th>รวม (THB)</th><th>%Ch</th></tr>`;
   s.months.forEach((m,i)=>{r+=`<tr><td>${ML[m]||m}</td>${useKeys.map(k=>'<td>'+fmt(s.data[k][i])+'</td>').join('')}<td><b>${fmt(s.total[i])}</b></td>${pchCell(s.pch[i])}</tr>`;});

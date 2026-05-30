@@ -88,7 +88,15 @@ h1{font-size:18px;font-weight:700;margin:2px 0;opacity:.9;}
 .stat{background:#fff;border-radius:10px;padding:14px 16px;border-left:4px solid var(--brand);border:1px solid var(--line);border-left-width:4px;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:transform 180ms ease,box-shadow 180ms ease;}
 .stat:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06);}
 .stat-val{font-size:26px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1;}
-.stat-lbl{font-size:11px;color:var(--mut);margin-top:6px;font-weight:500;letter-spacing:.2px;}
+.stat-lbl{font-size:11px;color:var(--mut);margin-top:6px;font-weight:500;letter-spacing:.2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.stat-share{font-size:10px;font-weight:700;color:#555;background:#f3f4f7;padding:2px 7px;border-radius:10px;font-variant-numeric:tabular-nums;letter-spacing:0;}
+/* Two-row KPI summary: hero (total) on top + per-segment stat-row below */
+.kpi-summary{display:flex;flex-direction:column;gap:14px;margin-bottom:22px;}
+.kpi-summary .stat-row{margin-bottom:0;}
+.kpi-hero{background:#fff;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:18px 22px;box-shadow:0 1px 2px rgba(0,0,0,.04);display:flex;flex-direction:column;gap:6px;transition:transform 180ms ease,box-shadow 180ms ease;}
+.kpi-hero:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06);}
+.kpi-hero-lab{font-size:11px;color:var(--mut);font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+.kpi-hero-val{font-size:36px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:-0.5px;}
 
 /* TABLES */
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04);background:#fff;}
@@ -629,7 +637,7 @@ footer{font-size:11px;text-align:center;padding:24px;background:#0A0A1A;color:#6
     <button class="btn btn-primary" onclick="switchTab(1)">ไปที่ Database →</button>
   </div>
   <div id="p3_content" style="display:none">
-    <div class="stat-row" id="kpi3"></div>
+    <div class="kpi-summary" id="kpi3"></div>
     <div class="chart-hint"><i data-lucide="info"></i> คลิกชื่อช่องทาง = โฟกัสเฉพาะอันนั้น • ⌘+คลิก (Mac) หรือ Ctrl+คลิก (Windows) = เพิ่ม/ลบหลายอัน (เทียบกัน) • คลิกซ้ำที่อันเดิม = แสดงทั้งหมด</div>
     <div class="chartbox scroll"><div class="chart-scroll-inner"><canvas id="c3"></canvas></div></div>
     <div class="tbl-wrap"><div id="t3"></div></div>
